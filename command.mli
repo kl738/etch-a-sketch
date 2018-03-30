@@ -3,5 +3,5 @@
  * game, loading game, saving game, and quitting from a game.*)
 type command
 
-(* [parse str] is the command that represents user input [str].*)
+(* [parse str] is the command that represents a command line user input [str].*)
 val parse : string -> command

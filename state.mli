@@ -1,8 +1,8 @@
-(** [state] represents the composite of the settings, segments, and filename *)
-type state
+(** [st] represents the composite of the settings, segments, and filename *)
+type st
 
 (** [settings] is a type representing the attributes of the pointer, including the
- * color, opacity, and line width*)
+ * color, opacity, and line width *)
 type settings
 
 (** [segments] is a type representing the drawing by how the line segments look
@@ -13,14 +13,14 @@ type segments
  * the correct game will be loaded and saved.*)
 val filename : string
 
-val get_settings : state -> settings
+val get_settings : st -> settings
 
-val set_settings : settings -> state
+val set_settings : settings -> st
 
-val get_segments : state -> segments
+val get_segments : st -> segments
 
-val set_segments : segments -> state
+val set_segments : segments -> st
 
-val get_filename : state -> string
+val get_filename : st -> string
 
-val set_filename : string -> state
+val set_filename : string -> st

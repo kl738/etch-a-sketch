@@ -1,7 +1,11 @@
 open State
 
-val canvas_width : int
+(** [v] is the type of the entire graphical user interface.  *)
+type v
 
-val canvas_height : int
+(** [canvas] is the type of the canvas within the view, including its dimensions
+ *  and displayed drawing. *)
+type canvas
 
-val display : state -> unit
+(** [display s] updates the GUI with the current state *)
+val display : st -> unit
