@@ -7,20 +7,22 @@ type settings
 
 (** [segments] is a type representing the drawing by how the line segments look
 * visually as well as how they're placed*)
-type segments
+type segment
+
+(*takes in the file's json and a string of the file path and outputs an inital
+state for the gui*)
+val init_state : Yojson.Basic.json -> string -> state
 
 (** [filename] specifies the current file name for the game, so that
  * the correct game will be loaded and saved.*)
-val filename : string
+val filename : st -> string
 
 val get_settings : st -> settings
 
-val set_settings : settings -> st
+val set_settings : settings -> st -> st
 
 val get_segments : st -> segments
 
-val set_segments : segments -> st
+val set_segments : segments -> st -> st
 
-val get_filename : st -> string
-
-val set_filename : string -> st
+val set_filename : string -> st -> st
