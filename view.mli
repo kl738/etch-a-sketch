@@ -7,5 +7,8 @@ type v
  *  and displayed drawing. *)
 type canvas
 
-(** [display s] updates the GUI with the current state *)
-val display : st -> unit
+(** [update_display s] updates the GUI with the current state *)
+val update_display : st -> unit
+
+(** [init i] initializes the GUI by displaying the canvas and any associated images *)
+val init : unit -> unit
