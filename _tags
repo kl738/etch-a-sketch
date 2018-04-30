@@ -1,1 +1,1 @@
-true: package(oUnit),package(yojson),package(str),package(ANSITerminal),package(Graphics),package(Camlimages),package(Camlimages.png)
+true: package(oUnit),package(yojson),package(str),package(ANSITerminal),package(Graphics),package(Camlimages),package(Camlimages.all_formats)
