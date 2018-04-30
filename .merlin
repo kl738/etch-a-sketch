@@ -5,3 +5,4 @@ PKG CamlImages
 PKG Images
 PKG Png
 PKG Jpeg
+PKG Yojson.Basic.Util

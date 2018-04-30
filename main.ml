@@ -1,5 +1,6 @@
 open Command
 open File_handler
+open View
 
 
 let rec file_loop (state: 'a option) str =
@@ -10,7 +11,7 @@ let rec file_loop (state: 'a option) str =
     |Save s -> failwith "not implemented"
     |Quit -> ANSITerminal.(print_string [red]
       "\n\nHave a nice day!\n");
-    |New -> file_loop (Some (load_new)) (read_line ())
+    |New -> init (); file_loop (Some (load_new)) (read_line ())
     )
 
 

@@ -1,19 +1,19 @@
 (* use these when testing using utop *)
-#require "camlimages.all_formats";;
+(* #require "camlimages.all_formats";;
 #require "graphics";;
-#use "state.ml";;
+#use "state.ml";; *)
 
 (* use this to compile, won't work in utop *)
 open State
 
 open Graphics
-
-(* need to fix following *)
-open CamlImages
+open Camlimages
 open Images
 open Png
 
 (***** BEGIN CONSTANTS *****)
+
+type v = unit
 
 type coord = {
   x: int;
@@ -62,7 +62,7 @@ let draw_segment (seg: segment) =
 
 let rec draw_segs segs =
   match segs with
-  | [] -> "";
+  | [] -> ()
   | h::t -> draw_segment h; draw_segs t
 
 let update_display st = draw_segs st.segments
@@ -122,8 +122,9 @@ let init u =
 
   let bg = load_image bg_image in
     draw_image bg 0 0;
-
   set_color (int_of_string ("0x000000"));
   (* test segments *)
-  draw_segs [ {direction = Up; length = 300; color = "0xFF00000"; width = 10; opacity = 1.0};
-              {direction = Right; length = 300; color = "0x000000"; width = 2; opacity = 1.0}]
+  draw_segs [ {direction = Up; length = 1000; color = "0xFF00000"; width = 2; opacity = 1.0};
+              {direction = Right; length = 1000; color = "0x000000"; width = 2; opacity = 1.0};
+              {direction = Down; length = 1000; color = "0x000000"; width = 2; opacity = 1.0};
+              {direction = Left; length = 1000; color = "0x000000"; width = 2; opacity = 1.0}]
