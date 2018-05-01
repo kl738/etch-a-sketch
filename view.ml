@@ -65,7 +65,7 @@ let rec draw_segs segs =
   | [] -> ()
   | h::t -> draw_segment h; draw_segs t
 
-let update_display st = draw_segs st.segments
+let update_display st = moveto canvas.x canvas.y; draw_segs st.segments
 
 (*TODO: resize image and canvas to specific canvas size*)
 (* let resize img w h =
@@ -121,10 +121,12 @@ let init u =
   moveto canvas.x canvas.y;
 
   let bg = load_image bg_image in
-    draw_image bg 0 0;
-  set_color (int_of_string ("0x000000"));
+  draw_image bg 0 0;
+
+  draw_segs init_blank_state.segments;
+  (* set_color (int_of_string ("0x000000")); *)
   (* test segments *)
-  draw_segs [ {direction = Up; length = 1000; color = "0xFF00000"; width = 2; opacity = 1.0};
-              {direction = Right; length = 1000; color = "0x000000"; width = 2; opacity = 1.0};
-              {direction = Down; length = 1000; color = "0x000000"; width = 2; opacity = 1.0};
-              {direction = Left; length = 1000; color = "0x000000"; width = 2; opacity = 1.0}]
+  (* draw_segs [ {direction = Up; length = 30; color = "0xFF00000"; width = 2; opacity = 1.0};
+              {direction = Right; length = 130; color = "0x000000"; width = 2; opacity = 1.0};
+              {direction = Down; length = 12; color = "0x000000"; width = 2; opacity = 1.0};
+              {direction = Left; length = 102; color = "0x000000"; width = 2; opacity = 1.0}] *)

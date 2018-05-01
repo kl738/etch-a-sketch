@@ -10,5 +10,6 @@ type canvas
 (** [update_display s] updates the GUI with the current state *)
 val update_display : st -> unit
 
-(** [init i] initializes the GUI by displaying the canvas and any associated images *)
+(** [init i] initializes the GUI by displaying the canvas and any associated images
+    and begins from the initial blank state*)
 val init : unit -> unit

@@ -1,6 +1,7 @@
 open State
 
-type inp = LeftArrow | RightArrow | UpArrow | DownArrow
+type inp = LeftArrow | RightArrow | UpArrow | DownArrow | IncWidth | DecWidth
+         | Color1 | Color2 | Color3 | Color4 | Color5
 
 (*[same_direction] returns true if the segment's direction is the same as
  * the input*)
@@ -34,18 +35,33 @@ let get_last_segment segs =
 (*[update_settings] updates the setting of the cursor on input*)
 let update_settings settings input=
   {
-    cursor_color = settings.cursor_color;
-    cursor_line_width = settings.cursor_line_width;
+    cursor_color =
+      (match input with
+       | LeftArrow | RightArrow | UpArrow | DownArrow
+       | IncWidth | DecWidth -> settings.cursor_color
+       | Color1 -> "0x000000"
+       | Color2 -> "0xFF00000"
+       | Color3 ->"0x00FF00"
+       | Color4 ->"0x00000FF"
+       | Color5 -> "0x551A8B");
+    cursor_line_width =
+      (match input with
+       | LeftArrow | RightArrow | UpArrow | DownArrow
+       | Color1 | Color2 | Color3 | Color4 | Color5 -> settings.cursor_line_width
+       | IncWidth -> let curr = settings.cursor_line_width in
+         if curr < 10 then curr+1 else curr
+       | DecWidth -> let curr = settings.cursor_line_width in
+         if curr > 1 then curr-1 else curr);
     cursor_x =
       (match input with
       | LeftArrow -> settings.cursor_x-1
       | RightArrow -> settings.cursor_x+1
-      | UpArrow -> settings.cursor_x
-      | DownArrow -> settings.cursor_x);
+      | UpArrow | DownArrow | IncWidth | DecWidth
+               | Color1 | Color2 | Color3 | Color4 | Color5-> settings.cursor_x);
     cursor_y =
       (match input with
-      | LeftArrow -> settings.cursor_y
-      | RightArrow -> settings.cursor_y
+      | LeftArrow | RightArrow | IncWidth | DecWidth
+                | Color1 | Color2 | Color3 | Color4 | Color5 -> settings.cursor_y
       | UpArrow -> settings.cursor_y+1
       | DownArrow -> settings.cursor_y-1);
     cursor_opacity = settings.cursor_opacity;
@@ -57,6 +73,8 @@ let update_settings settings input=
 let input_process input state =
   match get_last_segment state.segments with
   | None ->
+    (match input with
+    | LeftArrow | RightArrow | UpArrow | DownArrow ->
     ({
       st_settings = (update_settings state.st_settings input);
       segments = [{
@@ -65,34 +83,49 @@ let input_process input state =
           | LeftArrow -> Left
           | RightArrow -> Right
           | UpArrow -> Up
-          | DownArrow -> Down);
+          | DownArrow -> Down
+          | _ -> failwith "impossible");
         length = 1;
         color = state.st_settings.cursor_color;
         width = state.st_settings.cursor_line_width;
         opacity = state.st_settings.cursor_opacity;
       }]
     })
-| Some seg ->
-  {
-    st_settings = (update_settings state.st_settings input);
-    segments =
-      if (same_direction seg.direction input)
-      && seg.opacity = state.st_settings.cursor_opacity
-      && seg.width = state.st_settings.cursor_line_width
-      && seg.color = state.st_settings.cursor_color
-      then
-      increase_length state.segments
-      else
-      state.segments@[{
-      direction =
-        (match input with
-        | LeftArrow -> Left
-        | RightArrow -> Right
-        | UpArrow -> Up
-        | DownArrow -> Down);
-      length = 1;
-      color = state.st_settings.cursor_color;
-      width = state.st_settings.cursor_line_width;
-      opacity = state.st_settings.cursor_opacity;
+    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 ->
+      ({
+        st_settings = (update_settings state.st_settings input);
+        segments = []
+      })
+    )
+  | Some seg ->
+    match input with
+    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 ->
+      ({
+        st_settings = (update_settings state.st_settings input);
+        segments = state.segments
+      })
+    | LeftArrow | RightArrow | UpArrow | DownArrow ->
+    {
+      st_settings = (update_settings state.st_settings input);
+      segments =
+        if (same_direction seg.direction input)
+        && seg.opacity = state.st_settings.cursor_opacity
+        && seg.width = state.st_settings.cursor_line_width
+        && seg.color = state.st_settings.cursor_color
+        then
+        increase_length state.segments
+        else
+        state.segments@[{
+        direction =
+          (match input with
+          | LeftArrow -> Left
+          | RightArrow -> Right
+          | UpArrow -> Up
+          | DownArrow -> Down
+          | _ -> failwith "impossible");
+        length = 1;
+        color = state.st_settings.cursor_color;
+        width = state.st_settings.cursor_line_width;
+        opacity = state.st_settings.cursor_opacity;
     }]
   }
