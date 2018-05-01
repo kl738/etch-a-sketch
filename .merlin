@@ -6,3 +6,4 @@ PKG Images
 PKG Png
 PKG Jpeg
 PKG Yojson.Basic.Util
+PKG oUnit
