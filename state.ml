@@ -29,10 +29,10 @@ type st = {
 
 (*converts a one segment element in the json List
 into a line segment of type segment*)
-let json_to_segment j = let lst = (j |> to_list) in
+let json_to_segment j =
 (*TODO: make sure this works with a saved file with no line segments*)
   let dir =  (
-  match ((List.nth lst 0 )|> to_int) with
+  match ((j|> member "d" )|> to_int) with
   |1 -> Left
   |2 -> Right
   |3 -> Up
@@ -40,16 +40,16 @@ let json_to_segment j = let lst = (j |> to_list) in
   | _ -> failwith "not a direction"
   ) in
   {direction = dir;
-   length = ((List.nth  lst 1)|> to_int);
-   color = ((List.nth  lst 2)|> to_string);
-   width = ((List.nth  lst 3)|> to_int);
-   opacity = ((List.nth lst 4)|> to_float);
+   length = ((j|> member "l" )|> to_int);
+   color = ((j|> member "c" )|> to_string);
+   width = ((j|> member "w" )|> to_int);
+   opacity = ((j|> member "o" )|> to_float);
    }
 
 (*given the settings member of the json file and a
 list of the line segments, this creates an object of type settings*)
 let json_to_settings filename j segments =
-  let first_segment = (List.nth  segments 0) in
+  let first_segment = (List.nth segments 0) in
   { cursor_color = first_segment.color;
     cursor_line_width = first_segment.width;
     cursor_x = j |> member "x" |> to_int;
