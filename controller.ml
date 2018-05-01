@@ -20,7 +20,7 @@ let increase_length segments =
   let before_last = (List.tl (List.rev segments)) in
   {
     direction = last_seg.direction;
-    length = last_seg.length+1;
+    length = last_seg.length+2;
     color = last_seg.color;
     width = last_seg.width;
     opacity = last_seg.opacity;
@@ -54,16 +54,16 @@ let update_settings settings input=
          if curr > 1 then curr-1 else curr);
     cursor_x =
       (match input with
-      | LeftArrow -> settings.cursor_x-1
-      | RightArrow -> settings.cursor_x+1
+      | LeftArrow -> settings.cursor_x-2
+      | RightArrow -> settings.cursor_x+2
       | UpArrow | DownArrow | IncWidth | DecWidth
                | Color1 | Color2 | Color3 | Color4 | Color5-> settings.cursor_x);
     cursor_y =
       (match input with
       | LeftArrow | RightArrow | IncWidth | DecWidth
                 | Color1 | Color2 | Color3 | Color4 | Color5 -> settings.cursor_y
-      | UpArrow -> settings.cursor_y+1
-      | DownArrow -> settings.cursor_y-1);
+      | UpArrow -> settings.cursor_y+2
+      | DownArrow -> settings.cursor_y-2);
     cursor_opacity = settings.cursor_opacity;
     file_name = settings.file_name;
   }
@@ -85,7 +85,7 @@ let input_process input state =
           | UpArrow -> Up
           | DownArrow -> Down
           | _ -> failwith "impossible");
-        length = 1;
+        length = 2;
         color = state.st_settings.cursor_color;
         width = state.st_settings.cursor_line_width;
         opacity = state.st_settings.cursor_opacity;
@@ -123,7 +123,7 @@ let input_process input state =
           | UpArrow -> Up
           | DownArrow -> Down
           | _ -> failwith "impossible");
-        length = 1;
+        length = 2;
         color = state.st_settings.cursor_color;
         width = state.st_settings.cursor_line_width;
         opacity = state.st_settings.cursor_opacity;

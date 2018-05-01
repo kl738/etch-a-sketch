@@ -19,7 +19,8 @@ let rec file_loop (state: 'a option) str =
       init ();
         let rec loop state () =
           let s = Graphics.wait_next_event [Button_down; Key_pressed] in
-          if s.keypressed then
+          if s.button then loop state ()
+          else if s.keypressed then
           (match s.key with
           | 'w' -> let new_st = input_process UpArrow state in update_display new_st;
               loop new_st ()
@@ -29,7 +30,7 @@ let rec file_loop (state: 'a option) str =
             loop new_st ()
           | 'd' -> let new_st = input_process RightArrow state in update_display new_st;
             loop new_st ()
-          | '+' -> let new_st = input_process IncWidth state in update_display new_st;
+          | '=' -> let new_st = input_process IncWidth state in update_display new_st;
             loop new_st ()
           | '-' -> let new_st = input_process DecWidth state in update_display new_st;
             loop new_st ()
@@ -54,7 +55,6 @@ let rec file_loop (state: 'a option) str =
         then Graphics.clear_graph ();
         print_string " end of event"; ) *)
   (* file_loop (Some (load_new)) (read_line ()); *)
-
     )
 
 (* [main ()] starts the REPL, which prompts for a game to play.
