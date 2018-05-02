@@ -1,8 +1,36 @@
 open OUnit2
 open State
 open Controller
+open File_handler
 
 let state = init_blank_state
+let loadedState = state_load "testjson.json"
+(*directin, width, color, length, opacity*)
+let seg1 = {direction = Right;
+ length = 3;
+ color = "0x000000";
+ width = 4;
+ opacity = 0.4;
+ }
+
+ let seg2 = {direction = Up;
+  length = 2;
+  color = "0x00FFFF";
+  width = 2;
+  opacity = 1.0;
+  }
+
+let equalState =
+  let setting =
+    { cursor_color = "0x000000";
+      cursor_line_width = 2;
+      cursor_x = 0;
+      cursor_y = 0;
+      cursor_opacity = 1.0;
+      file_name = "testjson.json";
+    }
+    in {st_settings = setting; segments = [seg1; seg2];}
+
 let stateIncWidth =
   let setting =
     { cursor_color = "0x000000";
@@ -26,6 +54,8 @@ let tests =
     "right" >:: (fun _ -> assert_equal Right (List.nth ((input_process RightArrow state).segments) 0).direction);
     "up" >:: (fun _ -> assert_equal Up (List.nth ((input_process UpArrow state).segments) 0).direction);
     "down" >:: (fun _ -> assert_equal Down (List.nth ((input_process DownArrow state).segments) 0).direction);
+    "check_parsing" >:: (fun _ -> assert_equal (get_segments equalState) (get_segments loadedState));
+
 
   ]
 
