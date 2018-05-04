@@ -11,7 +11,7 @@ let rec file_loop (state: 'a option) str =
   match str with
   | exception End_of_file -> ()
   | file_command -> (match (Command.parse file_command) with
-    | Open filename -> (init ();
+    | Open filename -> (init (Some (state_load filename));
       let rec loop state () =
         let s = Graphics.wait_next_event [Button_down; Key_pressed] in
         if s.button then loop state ()
@@ -48,7 +48,7 @@ let rec file_loop (state: 'a option) str =
     | Quit -> ANSITerminal.(print_string [red]
       "\n\nHave a nice day!\n");
     | New ->
-      init ();
+      init None;
         let rec loop state () =
           let s = Graphics.wait_next_event [Button_down; Key_pressed] in
           if s.button then loop state ()
