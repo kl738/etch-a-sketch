@@ -40,11 +40,21 @@ let rec file_loop (state: 'a option) str =
         | '5' -> let new_st = input_process Color5 state in update_display new_st;
           loop new_st ()
         | 'q' -> ()
+        | 'p' ->
+          print_string "Type a command in format \"Save <filename>\"";
+          file_loop (Some state) (read_line ());
+          loop state ()
         | _ -> loop state ()
         )
       in loop (state_load filename) ()
       )
-    | Save s -> failwith "not implemented"
+    | Save filename -> (match state with
+      |None -> ANSITerminal.(print_string [red]
+      "\n\nNothing has been loaded yet!\n");
+      |Some stateVal -> ANSITerminal.(print_string [red]
+      "\n\nSaving state ... \n"); state_save stateVal filename
+
+      )
     | Quit -> ANSITerminal.(print_string [red]
       "\n\nHave a nice day!\n");
     | New ->
@@ -76,6 +86,10 @@ let rec file_loop (state: 'a option) str =
             loop new_st ()
           | '5' -> let new_st = input_process Color5 state in update_display new_st;
             loop new_st ()
+          | 'p' ->
+            print_string "Type a command in format \"Save <filename>\"";
+            file_loop (Some state) (read_line ());
+            loop state ()
           | 'q' -> ()
           | _ -> loop state ()
           )

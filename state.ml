@@ -12,6 +12,12 @@ type settings = {
 
 type direction = Left | Right | Up | Down
 
+let direction_to_int d = match d with
+|Left -> 1
+|Right -> 2
+|Up -> 3
+|Down -> 4
+
 (*Direction, length of segment, color in hex, line width, opacity*)
 
 type segment = {

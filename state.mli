@@ -39,6 +39,9 @@ val init_blank_state : st
 
 val get_settings : st -> settings
 
+(*converts direction to its corresponding integer mapping within json*)
+val direction_to_int : direction -> int
+
 val set_settings : settings -> st -> st
 
 val get_segments : st -> (segment list)
