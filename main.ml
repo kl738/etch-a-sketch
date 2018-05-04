@@ -11,7 +11,7 @@ let rec file_loop (state: 'a option) str =
   match str with
   | exception End_of_file -> ()
   | file_command -> (match (Command.parse file_command) with
-    | Open s -> (init ();
+    | Open filename -> (init ();
       let rec loop state () =
         let s = Graphics.wait_next_event [Button_down; Key_pressed] in
         if s.button then loop state ()
@@ -42,7 +42,7 @@ let rec file_loop (state: 'a option) str =
         | 'q' -> ()
         | _ -> loop state ()
         )
-      in loop (state_load s) ()
+      in loop (state_load filename) ()
       )
     | Save s -> failwith "not implemented"
     | Quit -> ANSITerminal.(print_string [red]
