@@ -115,18 +115,16 @@ let load_image f =
 let draw_canvas u =
   Graphics.fill_rect canvas.x canvas.y canvas.width canvas.height
 
-let init (st: State.st option) =
+let init u =
   open_graph (" " ^ string_of_int (window_size.x) ^ "x" ^
     string_of_int (window_size.y));
+    moveto canvas.x canvas.y;
 
 
   let bg = load_image bg_image in
   draw_image bg 0 0;
-  match st with
-  | None -> moveto canvas.x canvas.y;
-      draw_segs init_blank_state.segments;
-  | Some s -> moveto (canvas.x + s.st_settings.cursor_x) (canvas.y + s.st_settings.cursor_y);
-      draw_segs s.segments;
+  draw_segs init_blank_state.segments;
+
   (* set_color (int_of_string ("0x000000")); *)
   (* test segments *)
   (* draw_segs [ {direction = Up; length = 30; color = "0xFF00000"; width = 2; opacity = 1.0};

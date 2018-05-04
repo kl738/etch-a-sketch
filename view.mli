@@ -12,4 +12,4 @@ val update_display : st -> unit
 
 (** [init i] initializes the GUI by displaying the canvas and any associated images
     and begins from the initial blank state*)
-val init : st option -> unit
+val init : unit -> unit
