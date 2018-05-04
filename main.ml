@@ -11,7 +11,39 @@ let rec file_loop (state: 'a option) str =
   match str with
   | exception End_of_file -> ()
   | file_command -> (match (Command.parse file_command) with
-    | Open s -> file_loop (Some (state_load s)) (read_line ())
+    | Open s -> (init ();
+      let rec loop state () =
+        let s = Graphics.wait_next_event [Button_down; Key_pressed] in
+        if s.button then loop state ()
+        else if s.keypressed then
+        (match s.key with
+        | 'w' -> let new_st = input_process UpArrow state in update_display new_st;
+            loop new_st ()
+        | 'a' -> let new_st = input_process LeftArrow state in update_display new_st;
+          loop new_st ()
+        | 's' -> let new_st = input_process DownArrow state in update_display new_st;
+          loop new_st ()
+        | 'd' -> let new_st = input_process RightArrow state in update_display new_st;
+          loop new_st ()
+        | '=' -> let new_st = input_process IncWidth state in update_display new_st;
+          loop new_st ()
+        | '-' -> let new_st = input_process DecWidth state in update_display new_st;
+          loop new_st ()
+        | '1' -> let new_st = input_process Color1 state in update_display new_st;
+          loop new_st ()
+        | '2' -> let new_st = input_process Color2 state in update_display new_st;
+          loop new_st ()
+        | '3' -> let new_st = input_process Color3 state in update_display new_st;
+          loop new_st ()
+        | '4' -> let new_st = input_process Color4 state in update_display new_st;
+          loop new_st ()
+        | '5' -> let new_st = input_process Color5 state in update_display new_st;
+          loop new_st ()
+        | 'q' -> ()
+        | _ -> loop state ()
+        )
+      in loop (state_load s) ()
+      )
     | Save s -> failwith "not implemented"
     | Quit -> ANSITerminal.(print_string [red]
       "\n\nHave a nice day!\n");

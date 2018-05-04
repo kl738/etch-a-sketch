@@ -7,14 +7,14 @@ let state = init_blank_state
 let loadedState = state_load "testjson.json"
 (*directin, width, color, length, opacity*)
 let seg1 = {direction = Right;
- length = 3;
+ length = 35;
  color = "0x000000";
  width = 4;
  opacity = 0.4;
  }
 
  let seg2 = {direction = Up;
-  length = 2;
+  length = 25;
   color = "0x00FFFF";
   width = 2;
   opacity = 1.0;
