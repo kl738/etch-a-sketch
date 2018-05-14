@@ -1,8 +1,11 @@
 (* open State *)
 (* can't test in utop without doing #use "state.ml" etc. *)
 type pt = int * int
+
 (** [find_root a x y] traverses [a] starting at position ([x], [y])
   *    to find the first black pixel and return its position.   *)
+  (* TODO: change this to use a pix array array, call after calls group_pixels
+          to find other groups of pixels *)
 let rec find_root (a: int array array) x y =
     if a.(x).(y) == 0 then (x,y)
     else if (y < (Array.length a.(x)) - 1)
@@ -11,19 +14,23 @@ let rec find_root (a: int array array) x y =
       then failwith "No root found"
     else find_root a (x+1) 0
 
-type pix = {use : bool; c : (int)}
+(* type of a pixel, [use] is if the pixel has been "seen" already, [c] is the color of the pixel *)
+type pix = {use : bool; c : int}
 
 
-(* necessary to avoid circular pts but need to mark pts as seen in traversal, cant within ifs lol *)
+(* converts color array array [a] to a pix array array with all pixels marked as not seen *)
 let map_seen a =
   Array.map (fun b -> Array.map (fun x -> {use = false; c = x}) b) a
 
-(** [pt tree] is a tree that will be used to group all pixels together
+(** [pt tree] is a tree that is used to group all pixels together
   *  format of a node is pt, Up, Down, Left, Right *)
+(* TODO: add branches for diagonal pixels, e.g. UpRight, UpLeft to connect those
+      pixels that arent directly touching?? -- JACK WILL DO THIS *)
 type 'a tree =
   | Leaf
   | Node of 'a * 'a tree * 'a tree * 'a tree * 'a tree
 
+(* i dont remember what this function was for but i'm gonna leave it in just in case *)
 (* let check_pix a dir (x,y) = a.(x).(y) <- {a.(x).(y) with use = true};
   match dir with
   | Up -> if a.(x-1).(y) == 0 && not (List.mem ((x-1),(y)) lst)
@@ -37,11 +44,12 @@ type 'a tree =
                   then group_pixels a ((x, y+1) :: lst)
   else lst *)
 
-
+(** [set_use (x,y) a] sets the pixel at coordinates ([x],[y]) to used in pix array array [a] *)
 let set_use (x,y) a =
   a.(x).(y) <- {a.(x).(y) with use = true}
 
-
+(** [group_pixels root a] traverses each pixel in the image and returns a
+  *   pt tree of points that will be drawn *)
 let rec group_pixels root a : pt tree =
   let x = fst root in let y = snd root in
   if x >= Array.length a || y >= Array.length a.(x) then Leaf
@@ -53,17 +61,18 @@ let rec group_pixels root a : pt tree =
         (group_pixels (x,y+1) a))
   else Leaf
 
-
+(** [dfs tree] converts [tree] to a list of points  *)
 let rec dfs tree =
   match tree with
   | Leaf -> []
   | Node (rt, u, d, l, r) -> [rt]@(dfs l)@[rt]@(dfs d)@[rt]@(dfs r)@[rt]@(dfs u)@[rt]
 
+(** [pts_to_segs pts segs] converts the list of pts [pts] to a list of traceable line segments  *)
 let rec pts_to_segs pts segs = let def_seg = {
   direction= Up;
-  length= 1;
+  length= 0.5;
   color= "00000000";
-  width= 1;
+  width= 0.5;
   opacity= 1.0;
 } in
   match pts with
@@ -75,3 +84,12 @@ let rec pts_to_segs pts segs = let def_seg = {
       | (0, -1) -> pts_to_segs (p2::t) ({def_seg with direction = Left} :: segs)
       | _ -> pts_to_segs (p2::t) (segs) end
   | _ -> segs
+
+(** [get_segs a] returns the list of segments from the image array [a]  *)
+(* TODO: this will be in interface, the only (?) function called by an external function,
+ *    [a] is produced from array_of_image in view.ml *)
+let get_segs a =
+  let a' = map_seen a in
+    let r = find_root a 0 0 in
+      let pts = dfs (group_pixels r a') in
+        pts_to_segs pts []

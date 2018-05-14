@@ -1,6 +1,6 @@
 # etch-a-sketch
 
-#installation:
+# installation:
 
 `brew install Caskroom/cask/xquartz`
 (maybe) `brew reinstall ocaml --with-x11`
