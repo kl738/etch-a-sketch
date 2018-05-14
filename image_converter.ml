@@ -92,4 +92,11 @@ let get_segs a =
   let a' = map_seen a in
     let r = find_root a 0 0 in
       let pts = dfs (group_pixels r a') in
-        pts_to_segs pts [],r
+  pts_to_segs pts [],r
+
+(*[color_diff] compares two colors a and b and returns a positive number
+  representing how different the colors are. The input should be the
+  decimal representation of a 6 figure hex color code. The comparison is
+  done using a modified weighted version of RGB euclidian distance that
+*)
+(* let color_diff a b = *)

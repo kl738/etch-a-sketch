@@ -238,7 +238,7 @@ let rec file_loop (state: 'a option) str =
          try
            (init ();
             let rec loop state () =
-              update_display state;
+              update_display state 156 170;
               let s = Graphics.wait_next_event [Button_down; Key_pressed] in
               if s.button then loop state ()
               else if s.keypressed then
