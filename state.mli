@@ -6,6 +6,7 @@ type settings = {
     cursor_x : int;
     cursor_y : int;
     cursor_opacity : float;
+    cursor_speed : int;
     mutable file_name : string;
   }
 
