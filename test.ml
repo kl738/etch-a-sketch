@@ -27,6 +27,7 @@ let equalState =
       cursor_x = 0;
       cursor_y = 0;
       cursor_opacity = 1.0;
+      cursor_speed = 2;
       file_name = "testjson.json";
     }
     in {st_settings = setting; segments = [seg1; seg2];}
@@ -38,6 +39,7 @@ let stateIncWidth =
       cursor_x = 0;
       cursor_y = 0;
       cursor_opacity = 1.0;
+      cursor_speed = 2;
       file_name = "new_file.json";
     } in {st_settings = setting; segments = [];}
 let tests =
