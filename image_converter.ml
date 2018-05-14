@@ -1,4 +1,4 @@
-(* open State *)
+open State
 (* can't test in utop without doing #use "state.ml" etc. *)
 type pt = int * int
 
@@ -61,7 +61,7 @@ let rec group_pixels root a : pt tree =
         (group_pixels (x,y+1) a))
   else Leaf
 
-(** [dfs tree] converts [tree] to a list of points  *)
+(** [dfs tree] converts [tree] to a lit of points  *)
 let rec dfs tree =
   match tree with
   | Leaf -> []
@@ -92,4 +92,4 @@ let get_segs a =
   let a' = map_seen a in
     let r = find_root a 0 0 in
       let pts = dfs (group_pixels r a') in
-        pts_to_segs pts []
+        pts_to_segs pts [],r
