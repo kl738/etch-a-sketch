@@ -70,10 +70,10 @@ let rec dfs tree =
 (** [pts_to_segs pts segs] converts the list of pts [pts] to a list of traceable line segments  *)
 let rec pts_to_segs pts segs = let def_seg = {
   direction= Up;
-  length= 0.5;
+  length= 1;
   color= "00000000";
-  width= 0.5;
-  opacity= 1.0;
+  width= 1;
+  opacity= 1;
 } in
   match pts with
   | [] -> segs
