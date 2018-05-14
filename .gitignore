@@ -2,3 +2,5 @@ _build/
 main.byte
 view.byte
 test.byte
+
+ktest.json

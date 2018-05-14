@@ -1,17 +1,20 @@
 open Command
-open File_handler
-open View
-open Controller
-open State
 
-exception End
+open Controller
+
+
+(* exception End
 
 let rec file_loop (state: 'a option) str =
   print_string "> ";
   match str with
   | exception End_of_file -> ()
-  | file_command -> (match (Command.parse file_command) with
-    | Open filename -> (init ();
+  | file_command ->
+    try
+    (match (Command.parse file_command) with
+    | Open filename ->
+      (try
+      (init ();
       let rec loop state () =
         let s = Graphics.wait_next_event [Button_down; Key_pressed] in
         if s.button then loop state ()
@@ -39,26 +42,36 @@ let rec file_loop (state: 'a option) str =
           loop new_st ()
         | '5' -> let new_st = input_process Color5 state in update_display new_st;
           loop new_st ()
+        | '.' -> let new_st = input_process Faster state in update_display new_st;
+          loop new_st ()
+        | ',' -> let new_st = input_process Slower state in update_display new_st;
+          loop new_st ()
         | 'q' -> ()
         | 'p' ->
           print_string "Type a command in format \"Save <filename>\"";
+          print_newline ();
+          print_string "> ";
           file_loop (Some state) (read_line ());
           loop state ()
         | _ -> loop state ()
         )
-      in loop (state_load filename) ()
-      )
+      in loop (state_load filename) ())
+      with
+      | Graphics.Graphic_failure("fatal I/O error") ->
+        print_string "Force quit detected. Exiting gracefully...";
+        print_newline ())
     | Save filename -> (match state with
-      |None -> ANSITerminal.(print_string [red]
+      | None -> ANSITerminal.(print_string [red]
       "\n\nNothing has been loaded yet!\n");
-      |Some stateVal -> ANSITerminal.(print_string [red]
+      | Some stateVal -> ANSITerminal.(print_string [red]
       "\n\nSaving state ... \n"); state_save stateVal filename
 
       )
     | Quit -> ANSITerminal.(print_string [red]
       "\n\nHave a nice day!\n");
     | New ->
-      init ();
+      try
+      (init ();
         let rec loop state () =
           let s = Graphics.wait_next_event [Button_down; Key_pressed] in
           if s.button then loop state ()
@@ -86,22 +99,30 @@ let rec file_loop (state: 'a option) str =
             loop new_st ()
           | '5' -> let new_st = input_process Color5 state in update_display new_st;
             loop new_st ()
+          | '.' -> let new_st = input_process Faster state in update_display new_st;
+            loop new_st ()
+          | ',' -> let new_st = input_process Slower state in update_display new_st;
+            loop new_st ()
           | 'p' ->
             print_string "Type a command in format \"Save <filename>\"";
+            print_newline ();
+            print_string "> ";
             file_loop (Some state) (read_line ());
             loop state ()
           | 'q' -> ()
           | _ -> loop state ()
           )
-        in loop init_blank_state ()
-        (* let s = Graphics.wait_next_event
-              [Graphics.Button_down; Graphics.Key_pressed]
-        in if s.Graphics.keypressed then (print_char s.Graphics.key)
-        else if s.Graphics.button
-        then Graphics.clear_graph ();
-        print_string " end of event"; ) *)
-  (* file_loop (Some (load_new)) (read_line ()); *)
+        in loop init_blank_state ())
+      with
+      | Graphics.Graphic_failure("fatal I/O error") ->
+        print_string "Force quit detected. Exiting gracefully...";
+        print_newline ()
     )
+    with
+    | Failure _ ->
+      print_string "Command not recognized. Try again.";
+      print_newline (); print_string "> ";
+      file_loop (state) (read_line ()) *)
 
 (* [main ()] starts the REPL, which prompts for a game to play.
  * You are welcome to improve the user interface, but it must

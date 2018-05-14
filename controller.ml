@@ -1,7 +1,10 @@
 open State
+open File_handler
+open View
+open State
 
 type inp = LeftArrow | RightArrow | UpArrow | DownArrow | IncWidth | DecWidth
-         | Color1 | Color2 | Color3 | Color4 | Color5
+         | Color1 | Color2 | Color3 | Color4 | Color5 | Faster | Slower
 
 (*[same_direction] returns true if the segment's direction is the same as
  * the input*)
@@ -14,13 +17,13 @@ let same_direction seg_dir input =
 
 (*[increase_length] of a segment is used when the settings are the same on
   the current state settings and the last segment drawn. Thus, the same
-  segment list is returned but with the last one incremented by length+=1.*)
-let increase_length segments =
+  segment list is returned but with the last one incremented by cursor_speed.*)
+let increase_length segments settings =
   let last_seg = List.hd (List.rev segments) in
   let before_last = (List.tl (List.rev segments)) in
   {
     direction = last_seg.direction;
-    length = last_seg.length+2;
+    length = last_seg.length + settings.cursor_speed;
     color = last_seg.color;
     width = last_seg.width;
     opacity = last_seg.opacity;
@@ -38,7 +41,7 @@ let update_settings settings input=
     cursor_color =
       (match input with
        | LeftArrow | RightArrow | UpArrow | DownArrow
-       | IncWidth | DecWidth -> settings.cursor_color
+       | IncWidth | DecWidth | Faster | Slower -> settings.cursor_color
        | Color1 -> "0x000000"
        | Color2 -> "0xFF00000"
        | Color3 ->"0x00FF00"
@@ -46,25 +49,33 @@ let update_settings settings input=
        | Color5 -> "0x551A8B");
     cursor_line_width =
       (match input with
-       | LeftArrow | RightArrow | UpArrow | DownArrow
-       | Color1 | Color2 | Color3 | Color4 | Color5 -> settings.cursor_line_width
+       | LeftArrow | RightArrow | UpArrow | DownArrow | Color1 | Color2
+       | Color3 | Color4 | Color5 | Faster | Slower -> settings.cursor_line_width
        | IncWidth -> let curr = settings.cursor_line_width in
          if curr < 10 then curr+1 else curr
        | DecWidth -> let curr = settings.cursor_line_width in
          if curr > 1 then curr-1 else curr);
     cursor_x =
       (match input with
-      | LeftArrow -> settings.cursor_x-2
-      | RightArrow -> settings.cursor_x+2
+      | LeftArrow -> settings.cursor_x-settings.cursor_speed
+      | RightArrow -> settings.cursor_x+settings.cursor_speed
       | UpArrow | DownArrow | IncWidth | DecWidth
-               | Color1 | Color2 | Color3 | Color4 | Color5-> settings.cursor_x);
+      | Color1 | Color2 | Color3 | Color4 | Color5 | Faster | Slower -> settings.cursor_x);
     cursor_y =
       (match input with
       | LeftArrow | RightArrow | IncWidth | DecWidth
-                | Color1 | Color2 | Color3 | Color4 | Color5 -> settings.cursor_y
-      | UpArrow -> settings.cursor_y+2
-      | DownArrow -> settings.cursor_y-2);
+      | Color1 | Color2 | Color3 | Color4 | Color5 | Faster | Slower-> settings.cursor_y
+      | UpArrow -> settings.cursor_y+settings.cursor_speed
+      | DownArrow -> settings.cursor_y-settings.cursor_speed);
     cursor_opacity = settings.cursor_opacity;
+    cursor_speed =
+    (match input with
+     | LeftArrow | RightArrow | UpArrow | DownArrow | Color1 | Color2
+     | Color3 | Color4 | Color5 | IncWidth | DecWidth -> settings.cursor_speed
+     | Faster -> let curr = settings.cursor_speed in
+       if curr < 10 then curr+1 else curr
+     | Slower -> let curr = settings.cursor_speed in
+       if curr > 1 then curr-1 else curr);
     file_name = settings.file_name;
   }
 
@@ -85,13 +96,13 @@ let input_process input state =
           | UpArrow -> Up
           | DownArrow -> Down
           | _ -> failwith "impossible");
-        length = 2;
+        length = state.st_settings.cursor_speed;
         color = state.st_settings.cursor_color;
         width = state.st_settings.cursor_line_width;
         opacity = state.st_settings.cursor_opacity;
       }]
     })
-    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 ->
+    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 | Faster | Slower->
       ({
         st_settings = (update_settings state.st_settings input);
         segments = []
@@ -99,7 +110,7 @@ let input_process input state =
     )
   | Some seg ->
     match input with
-    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 ->
+    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 | Faster | Slower->
       ({
         st_settings = (update_settings state.st_settings input);
         segments = state.segments
@@ -113,7 +124,7 @@ let input_process input state =
         && seg.width = state.st_settings.cursor_line_width
         && seg.color = state.st_settings.cursor_color
         then
-        increase_length state.segments
+        increase_length state.segments state.st_settings
         else
         state.segments@[{
         direction =
@@ -123,9 +134,128 @@ let input_process input state =
           | UpArrow -> Up
           | DownArrow -> Down
           | _ -> failwith "impossible");
-        length = 2;
+        length = state.st_settings.cursor_speed;
         color = state.st_settings.cursor_color;
         width = state.st_settings.cursor_line_width;
         opacity = state.st_settings.cursor_opacity;
     }]
-  }
+    }
+
+let rec file_loop (state: 'a option) str =
+  print_string "> ";
+  match str with
+  | exception End_of_file -> ()
+  | file_command ->
+    try
+      (match (Command.parse file_command) with
+       | Open filename ->
+         (try
+            (init ();
+             let rec loop state () =
+               let s = Graphics.wait_next_event [Button_down; Key_pressed] in
+               if s.button then loop state ()
+               else if s.keypressed then
+                 (match s.key with
+                  | 'w' -> let new_st = input_process UpArrow state in update_display new_st;
+                    loop new_st ()
+                  | 'a' -> let new_st = input_process LeftArrow state in update_display new_st;
+                    loop new_st ()
+                  | 's' -> let new_st = input_process DownArrow state in update_display new_st;
+                    loop new_st ()
+                  | 'd' -> let new_st = input_process RightArrow state in update_display new_st;
+                    loop new_st ()
+                  | '=' -> let new_st = input_process IncWidth state in update_display new_st;
+                    loop new_st ()
+                  | '-' -> let new_st = input_process DecWidth state in update_display new_st;
+                    loop new_st ()
+                  | '1' -> let new_st = input_process Color1 state in update_display new_st;
+                    loop new_st ()
+                  | '2' -> let new_st = input_process Color2 state in update_display new_st;
+                    loop new_st ()
+                  | '3' -> let new_st = input_process Color3 state in update_display new_st;
+                    loop new_st ()
+                  | '4' -> let new_st = input_process Color4 state in update_display new_st;
+                    loop new_st ()
+                  | '5' -> let new_st = input_process Color5 state in update_display new_st;
+                    loop new_st ()
+                  | '.' -> let new_st = input_process Faster state in update_display new_st;
+                    loop new_st ()
+                  | ',' -> let new_st = input_process Slower state in update_display new_st;
+                    loop new_st ()
+                  | 'q' -> ()
+                  | 'p' ->
+                    print_string "Type a command in format \"Save <filename>\"";
+                    print_newline ();
+                    print_string "> ";
+                    file_loop (Some state) (read_line ());
+                    loop state ()
+                  | _ -> loop state ()
+                 )
+             in loop (state_load filename) ())
+          with
+          | Graphics.Graphic_failure("fatal I/O error") ->
+            print_string "Force quit detected. Exiting gracefully...";
+            print_newline ())
+       | Save filename -> (match state with
+           | None -> ANSITerminal.(print_string [red]
+                                     "\n\nNothing has been loaded yet!\n");
+           | Some stateVal -> ANSITerminal.(print_string [red]
+                                              "\n\nSaving state ... \n"); state_save stateVal filename
+
+         )
+       | Quit -> ANSITerminal.(print_string [red]
+                                 "\n\nHave a nice day!\n");
+       | New ->
+         try
+           (init ();
+            let rec loop state () =
+              let s = Graphics.wait_next_event [Button_down; Key_pressed] in
+              if s.button then loop state ()
+              else if s.keypressed then
+                (match s.key with
+                 | 'w' -> let new_st = input_process UpArrow state in update_display new_st;
+                   loop new_st ()
+                 | 'a' -> let new_st = input_process LeftArrow state in update_display new_st;
+                   loop new_st ()
+                 | 's' -> let new_st = input_process DownArrow state in update_display new_st;
+                   loop new_st ()
+                 | 'd' -> let new_st = input_process RightArrow state in update_display new_st;
+                   loop new_st ()
+                 | '=' -> let new_st = input_process IncWidth state in update_display new_st;
+                   loop new_st ()
+                 | '-' -> let new_st = input_process DecWidth state in update_display new_st;
+                   loop new_st ()
+                 | '1' -> let new_st = input_process Color1 state in update_display new_st;
+                   loop new_st ()
+                 | '2' -> let new_st = input_process Color2 state in update_display new_st;
+                   loop new_st ()
+                 | '3' -> let new_st = input_process Color3 state in update_display new_st;
+                   loop new_st ()
+                 | '4' -> let new_st = input_process Color4 state in update_display new_st;
+                   loop new_st ()
+                 | '5' -> let new_st = input_process Color5 state in update_display new_st;
+                   loop new_st ()
+                 | '.' -> let new_st = input_process Faster state in update_display new_st;
+                   loop new_st ()
+                 | ',' -> let new_st = input_process Slower state in update_display new_st;
+                   loop new_st ()
+                 | 'p' ->
+                   print_string "Type a command in format \"Save <filename>\"";
+                   print_newline ();
+                   print_string "> ";
+                   file_loop (Some state) (read_line ());
+                   loop state ()
+                 | 'q' -> ()
+                 | _ -> loop state ()
+                )
+            in loop init_blank_state ())
+         with
+         | Graphics.Graphic_failure("fatal I/O error") ->
+           print_string "Force quit detected. Exiting gracefully...";
+           print_newline ()
+      )
+    with
+    | Failure _ ->
+      print_string "Command not recognized. Try again.";
+      print_newline (); print_string "> ";
+      file_loop (state) (read_line ())

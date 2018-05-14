@@ -6,6 +6,7 @@ type settings = {
     cursor_x : int;
     cursor_y : int;
     cursor_opacity : float;
+    cursor_speed : int;
     mutable file_name : string;
   }
 
@@ -61,6 +62,7 @@ let json_to_settings filename j segments =
     cursor_x = j |> member "x" |> to_int;
     cursor_y = j |> member "y" |> to_int;
     cursor_opacity = first_segment.opacity;
+    cursor_speed = 2;
     file_name = filename;
   }
 
@@ -77,6 +79,7 @@ let init_blank_state =
       cursor_x = 0;
       cursor_y = 0;
       cursor_opacity = 1.0;
+      cursor_speed = 2;
       file_name = "new_file.json";
     } in {st_settings = setting; segments = [];}
 
