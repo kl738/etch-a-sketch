@@ -73,7 +73,7 @@ let rec pts_to_segs pts segs = let def_seg = {
   length= 1;
   color= "00000000";
   width= 1;
-  opacity= 1;
+  opacity= 1.0;
 } in
   match pts with
   | [] -> segs
