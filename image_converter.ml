@@ -221,4 +221,5 @@ let append_not_empty e l =
 (** [tree_to_segs t segs] returns the list of lists of segments from the tree [t]  *)
 let rec tree_to_segs t segs =
   let pts = (dfs t) in
-    pts_to_segs pts []
+    let rt = List.hd pts in
+    (rt, pts_to_segs pts [])
