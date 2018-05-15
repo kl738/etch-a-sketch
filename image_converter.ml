@@ -144,6 +144,8 @@ let rec group_pixels root a : pt tree =
   else Leaf
 
 
+(*[merge_2_groups] merges the trees [group1] and [group2]
+* into one tree*)
   let rec merge_2_groups group1 group2 =
     match group1 with
     | Node ((x,y),_,_,_,_) -> (
@@ -168,9 +170,9 @@ let rec group_pixels root a : pt tree =
       )
     | Leaf -> group2
 
-  (*take a list of nodes and output a node merging all of them*)
-  let merge_all_groups group_lst =
-      List.fold_left merge_2_groups Leaf group_lst
+(*take a list of nodes and output a node merging all of them*)
+let merge_all_groups group_lst =
+    List.fold_left merge_2_groups Leaf group_lst
 
   (** [groups p segs] is the list of trees representing groups of contiguous pixels
     *  from pix array array [p]
