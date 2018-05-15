@@ -1,17 +1,30 @@
-open State
+(* open State *)
 (* can't test in utop without doing #use "state.ml" etc. *)
 type pt = int * int
+
+(*TODO: resize stuff, Jack will finish this, just ignore for now*)
+(* we want to resize so that the smaller dimension fits   *)
+let sf src canvas : float = if Array.length src < canvas.height &&
+    Array.length src.(0) < canvas.width then 1.0 (*image smaller than canvas, no need to resize to fit *)
+  else if (Array.length src) > (Array.length src.(0)) then (*portrait image*)
+      float_of_int(canvas.height) /. float_of_int(Array.length src)
+  else float_of_int(canvas.width) /. float_of_int(Array.length src.(0)) (*landscape image*)
+
+let fit_canvas (src : int array array) = let sf = sf src in sf
+
+(* type of a pixel, [use] is if the pixel has been "seen" already, [c] is the color of the pixel *)
+type pix = {use : bool; c : int}
 
 (** [find_root a x y] traverses [a] starting at position ([x], [y])
   *    to find the first black pixel and return its position.   *)
   (* TODO: change this to use a pix array array, call after calls group_pixels
           to find other groups of pixels *)
-let rec find_root (a: int array array) x y =
-    if a.(x).(y) == 0 then (x,y)
+let rec find_root (a: pix array array) x y =
+    if a.(x).(y).c == 0 && not a.(x).(y).use then Some (x,y)
     else if (y < (Array.length a.(x)) - 1)
       then find_root a x (y+1)
     else if (x == (Array.length a) - 1)
-      then failwith "No root found"
+      then None
     else find_root a (x+1) 0
 
 let mod_16 i =
@@ -68,8 +81,6 @@ let rec make_threshhold x y (a: int array array)  : int array array =
       then a
     else (a.(x).(y) <- (threshold_pixel a.(x).(y)); make_threshhold (x+1) 0 a)
 
-(* type of a pixel, [use] is if the pixel has been "seen" already, [c] is the color of the pixel *)
-type pix = {use : bool; c : int}
 
 
 (* converts color array array [a] to a pix array array with all pixels marked as not seen *)
@@ -119,34 +130,53 @@ let rec group_pixels root a : pt tree =
   else Leaf
 
 
-
-let rec merge_2_groups group1 group2 =
-  match group1 with
-  | Node ((x,y),_,_,_,_) -> (
-    match group2 with
-    | Node ((x2,y2),_,_,_,_) -> (
-      let xDiff = x - x2 in
-      let yDiff = y - y2 in
-        (*group2 is farther right*)
-        if(xDiff < 0) then
-          (merge_2_groups (Node ((x + 1,y),Leaf,Leaf,group1,Leaf)) group2)
-        (*group2 is farther left*)
-        else if (xDiff > 0) then
-          (merge_2_groups (Node ((x - 1,y),Leaf,Leaf,Leaf,group1)) group2)
-        (*group2 is farther up*)
-        else if (yDiff < 0) then
-        (  merge_2_groups (Node ((x ,y + 1),group1,Leaf,Leaf, Leaf)) group2)
-        else if (yDiff > 0) then
-        (  merge_2_groups (Node ((x ,y + 1),group1,Leaf,Leaf, Leaf)) group2)
-        else Node ((x,y),group1,group2,Leaf,Leaf)
+  let rec merge_2_groups group1 group2 =
+    match group1 with
+    | Node ((x,y),_,_,_,_) -> (
+      match group2 with
+      | Node ((x2,y2),_,_,_,_) -> (
+        let xDiff = x - x2 in
+        let yDiff = y - y2 in
+          (*group2 is farther right*)
+          if(xDiff < 0) then
+            (merge_2_groups (Node ((x + 1,y),Leaf,Leaf,group1,Leaf)) group2)
+          (*group2 is farther left*)
+          else if (xDiff > 0) then
+            (merge_2_groups (Node ((x - 1,y),Leaf,Leaf,Leaf,group1)) group2)
+          (*group2 is farther up*)
+          else if (yDiff < 0) then
+          (  merge_2_groups (Node ((x ,y + 1),group1,Leaf,Leaf, Leaf)) group2)
+          else if (yDiff > 0) then
+          (  merge_2_groups (Node ((x ,y + 1),group1,Leaf,Leaf, Leaf)) group2)
+          else Node ((x,y),group1,group2,Leaf,Leaf)
+        )
+      | Leaf -> group1
       )
-    | Leaf -> group1
-    )
-  | Leaf -> group2
+    | Leaf -> group2
 
-  (*take a list of nodes and output a node merging all of them*)
-  let merge_all_groups group_lst =
-    List.fold_left merge_2_groups Leaf group_lst
+    (*take a list of nodes and output a node merging all of them*)
+    let merge_all_groups group_lst =
+      List.fold_left merge_2_groups Leaf group_lst
+
+  (** [groups p segs] is the list of trees representing groups of contiguous pixels
+    *  from pix array array [p]
+    *  MAY CONTAIN EMPTY TREES *)
+  let rec groups p trees = match find_root p 0 0 with
+  | None -> failwith "No root found"
+  | Some r -> let g = (group_pixels r p) in
+    match find_root p 0 0 with
+      | None -> g::trees
+      | Some r2 -> groups p (g :: trees)
+
+  (** [get_groups a] is the list of trees for color array array [a] *)
+  let get_groups a =
+    let p = map_seen a in
+      List.filter (fun l -> match l with
+        | Leaf -> false
+        | Node (_, Leaf, Leaf, Leaf, Leaf) -> false
+        | _ -> true) (groups p [])
+
+
 
 (** [dfs tree] converts [tree] to a lit of points  *)
 let rec dfs tree =
@@ -172,11 +202,13 @@ let rec pts_to_segs pts segs = let def_seg = {
       | _ -> pts_to_segs (p2::t) (segs) end
   | _ -> segs
 
-(** [get_segs a] returns the list of segments from the image array [a]  *)
-(* TODO: this will be in interface, the only (?) function called by an external function,
- *    [a] is produced from array_of_image in view.ml *)
-let get_segs a =
-  let a' = map_seen a in
-    let r = find_root a 0 0 in
-      let pts = dfs (group_pixels r a') in
-  pts_to_segs pts [],r
+(** [append_not_empty e l] appends list [e] to list of lists [l] if [e] is not empty  *)
+let append_not_empty e l =
+  match e with
+  | [] -> l
+  | _ -> e :: l
+
+(** [tree_to_segs t segs] returns the list of lists of segments from the tree [t]  *)
+let rec tree_to_segs t segs =
+  let pts = (dfs t) in
+    pts_to_segs pts []
