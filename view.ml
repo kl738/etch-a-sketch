@@ -46,7 +46,7 @@ let canvas = {x = 156; y = 170; width = 485; height = 343}
 (***** END CONSTANTS *****)
 
 
-type canvas = unit
+type canvas = {x: int; y: int; width: int; height: int}
 
 let draw_segment (seg: segment) =
   set_line_width seg.width;
