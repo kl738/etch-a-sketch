@@ -2,8 +2,6 @@
 (* can't test in utop without doing #use "state.ml" etc. *)
 type pt = int * int
 
-type color = int
-
 (*TODO: resize stuff, Jack will finish this, just ignore for now*)
 (* we want to resize so that the smaller dimension fits   *)
 let sf src canvas : float = if Array.length src < canvas.height &&
@@ -12,7 +10,7 @@ let sf src canvas : float = if Array.length src < canvas.height &&
       float_of_int(canvas.height) /. float_of_int(Array.length src)
   else float_of_int(canvas.width) /. float_of_int(Array.length src.(0)) (*landscape image*)
 
-let fit_canvas (src : color array array) = let sf = sf src in sf
+let fit_canvas (src : int array array) = let sf = sf src in sf
 
 (* type of a pixel, [use] is if the pixel has been "seen" already, [c] is the color of the pixel *)
 type pix = {use : bool; c : int}
@@ -76,7 +74,7 @@ else 1
 
 (*returns the pixel array with threshold applied.
 requires: x and y both start at 0 *)
-let rec make_threshhold x y (a: color array array)  : int array array =
+let rec make_threshhold x y (a: int array array)  : int array array =
     if (y < (Array.length a.(x)) - 1)
       then (a.(x).(y) <- (threshold_pixel a.(x).(y)); make_threshhold  x (y+1) a)
     else if (x == (Array.length a) - 1)
@@ -128,6 +126,26 @@ let rec group_pixels root a : pt tree =
         (group_pixels (x,y+1) a))
   else Leaf
 
+
+(** [groups p segs] is the list of trees representing groups of contiguous pixels
+  *  from pix array array [p]
+  *  MAY CONTAIN EMPTY TREES *)
+let rec groups p trees = match find_root p 0 0 with
+| None -> failwith "No root found"
+| Some r -> let g = (group_pixels r p) in
+  match find_root p 0 0 with
+    | None -> g::trees
+    | Some r2 -> groups p (g :: trees)
+
+(** [get_groups a] is the list of trees for color array array [a] *)
+let get_groups a =
+  let p = map_seen a in
+    List.filter (fun l -> match l with
+      | Leaf -> false
+      | Node (_, Leaf, Leaf, Leaf, Leaf) -> false
+      | _ -> true) (groups p [])
+
+
 (** [dfs tree] converts [tree] to a lit of points  *)
 let rec dfs tree =
   match tree with
@@ -158,19 +176,7 @@ let append_not_empty e l =
   | [] -> l
   | _ -> e :: l
 
-(** [pix_to_segs pix segs] returns the list of lists of segments from the pix array array [pix]  *)
-let rec pix_to_segs p segs =
-  match find_root p 0 0 with
-  | None -> failwith "No root found"
-  | Some r -> let pts = (dfs (group_pixels r p)) in
-    let s = pts_to_segs pts [] in
-    match find_root p 0 0 with
-      | None -> append_not_empty s segs
-      | Some r2 -> get_segs p (append_not_empty s segs)
-
-(** [get_segs a] is the list of lists of segments from the color array array [a] *)
-(* TODO: this will be in interface, the only (?) function called by an external function,
- *    [a] is produced from array_of_image in view.ml *)
-let get_segs a =
-  let p = map_seen a in
-    pix_to_segs p []
+(** [tree_to_segs t segs] returns the list of lists of segments from the tree [t]  *)
+let rec tree_to_segs t segs =
+  let pts = (dfs t) in
+    pts_to_segs pts []
