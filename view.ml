@@ -32,7 +32,7 @@ type rect = {
   height: int
 }
 
-let bg_image = "etch-a-sketch-2-resized.png"
+let bg_image = "etch-a-sketch.png"
 
 (* TODO: fix these numbers*)
 let window_size = {x = 800; y = 664}
@@ -44,9 +44,6 @@ let window_size = {x = 800; y = 664}
 let canvas = {x = 156; y = 170; width = 485; height = 343}
 
 (***** END CONSTANTS *****)
-
-
-type canvas = {x: int; y: int; width: int; height: int}
 
 let draw_segment (seg: segment) =
   set_line_width seg.width;
@@ -110,12 +107,13 @@ let array_of_image img =
 
 (** [draw_image img x y] draws [img] on the canvas starting at point [x],[y] *)
 let draw_image img x y =
-  Graphics.draw_image (Graphics.make_image (array_of_image img)) x y
+  Graphics.draw_image (Graphics.make_image (img)) x y
 
-(** [load_image f] loads the image named [f] in the current directory.
+(** [load_image f] loads the image named [f] in the current directory and returns
+  *  the color array array
   * requires: f is a png file *)
 let load_image f =
-  Png.load_as_rgb24 f []
+  array_of_image (Png.load_as_rgb24 f [])
 
 (* just made this to test canvas bounds *)
 let draw_canvas u =
@@ -126,14 +124,6 @@ let init u =
     string_of_int (window_size.y));
     moveto canvas.x canvas.y;
 
-
-  let bg = load_image bg_image in
+let bg = load_image bg_image in
   draw_image bg 0 0;
   draw_segs init_blank_state.segments;
-
-  (* set_color (int_of_string ("0x000000")); *)
-  (* test segments *)
-  (* draw_segs [ {direction = Up; length = 30; color = "0xFF00000"; width = 2; opacity = 1.0};
-              {direction = Right; length = 130; color = "0x000000"; width = 2; opacity = 1.0};
-              {direction = Down; length = 12; color = "0x000000"; width = 2; opacity = 1.0};
-              {direction = Left; length = 102; color = "0x000000"; width = 2; opacity = 1.0}] *)

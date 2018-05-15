@@ -8,6 +8,7 @@ open Png
 (** [v] is the type of the entire graphical user interface.  *)
 type v
 
+(** [rect] represents the type of a visible rectangle *)
 type rect = {x: int; y: int; width: int; height: int}
 
 (** [canvas] is the type of the canvas within the view, including its dimensions
@@ -23,6 +24,7 @@ val init : unit -> unit
 
 val slow_draw_segs : segment list -> int*int -> unit
 
-val load_image : string -> Images.t
-
-val array_of_image : Images.t -> color array array
+(** [load_image f] loads the image named [f] in the current directory and returns
+    the color array array
+  * requires: f is a png file *)
+val load_image : string -> color array array
