@@ -2,6 +2,8 @@ open State
 open File_handler
 open View
 open State
+open Image_converter
+open Graphics
 
 type inp = LeftArrow | RightArrow | UpArrow | DownArrow | IncWidth | DecWidth
          | Color1 | Color2 | Color3 | Color4 | Color5 | Faster | Slower
@@ -151,51 +153,78 @@ let rec file_loop (state: 'a option) str =
        | Open filename ->
          (try
             (init ();
-             let rec loop state () =
+             let rec loop state (x:int) (y:int) () =
+               update_display state x y ;
                let s = Graphics.wait_next_event [Button_down; Key_pressed] in
-               if s.button then loop state ()
+               if s.button then loop state x y ()
                else if s.keypressed then
                  (match s.key with
-                  | 'w' -> let new_st = input_process UpArrow state in update_display new_st;
-                    loop new_st ()
-                  | 'a' -> let new_st = input_process LeftArrow state in update_display new_st;
-                    loop new_st ()
-                  | 's' -> let new_st = input_process DownArrow state in update_display new_st;
-                    loop new_st ()
-                  | 'd' -> let new_st = input_process RightArrow state in update_display new_st;
-                    loop new_st ()
-                  | '=' -> let new_st = input_process IncWidth state in update_display new_st;
-                    loop new_st ()
-                  | '-' -> let new_st = input_process DecWidth state in update_display new_st;
-                    loop new_st ()
-                  | '1' -> let new_st = input_process Color1 state in update_display new_st;
-                    loop new_st ()
-                  | '2' -> let new_st = input_process Color2 state in update_display new_st;
-                    loop new_st ()
-                  | '3' -> let new_st = input_process Color3 state in update_display new_st;
-                    loop new_st ()
-                  | '4' -> let new_st = input_process Color4 state in update_display new_st;
-                    loop new_st ()
-                  | '5' -> let new_st = input_process Color5 state in update_display new_st;
-                    loop new_st ()
-                  | '.' -> let new_st = input_process Faster state in update_display new_st;
-                    loop new_st ()
-                  | ',' -> let new_st = input_process Slower state in update_display new_st;
-                    loop new_st ()
+                  | 'w' -> let new_st = input_process UpArrow state in
+                    loop new_st x y ()
+                  | 'a' -> let new_st = input_process LeftArrow state in
+                    loop new_st x y ()
+                  | 's' -> let new_st = input_process DownArrow state in
+                    loop new_st x y ()
+                  | 'd' -> let new_st = input_process RightArrow state in
+                    loop new_st x y ()
+                  | '=' -> let new_st = input_process IncWidth state in
+                    loop new_st x y ()
+                  | '-' -> let new_st = input_process DecWidth state in
+                    loop new_st x y ()
+                  | '1' -> let new_st = input_process Color1 state in
+                    loop new_st x y ()
+                  | '2' -> let new_st = input_process Color2 state in
+                    loop new_st x y ()
+                  | '3' -> let new_st = input_process Color3 state in
+                    loop new_st x y ()
+                  | '4' -> let new_st = input_process Color4 state in
+                    loop new_st x y ()
+                  | '5' -> let new_st = input_process Color5 state in
+                    loop new_st x y ()
+                  | '.' -> let new_st = input_process Faster state in
+                    loop new_st x y ()
+                  | ',' -> let new_st = input_process Slower state in
+                    loop new_st x y ()
                   | 'q' -> ()
                   | 'p' ->
                     print_string "Type a command in format \"Save <filename>\"";
                     print_newline ();
                     print_string "> ";
                     file_loop (Some state) (read_line ());
-                    loop state ()
-                  | _ -> loop state ()
+                    loop state x y ()
+                  | _ -> loop state x y ()
                  )
-             in loop (state_load filename) ())
+             in
+            (if (Str.string_match (Str.regexp ".*\\(.json\\)$") filename 0)
+             then loop (state_load filename) 156 170 ()
+             else if (Str.string_match (Str.regexp ".*\\(.png\\)$") filename 0)
+             then
+             let (segs,rt)= get_segs (load_image filename |> array_of_image |> make_threshhold 0 0) in
+             let new_state =
+               let setting =
+                 { cursor_color = "0x000000";
+                   cursor_line_width = 1;
+                   cursor_x = 0;
+                   cursor_y = 0;
+                   cursor_opacity = 1.0;
+                   cursor_speed = 2;
+                   file_name = filename^".json";
+                 }
+               in {st_settings = setting; segments = segs}
+             in
+             (slow_draw_segs segs rt); loop new_state (156+snd rt) (513-fst rt) ()
+             (* else failwith "error" *)
+            )
+            )
           with
           | Graphics.Graphic_failure("fatal I/O error") ->
             print_string "Force quit detected. Exiting gracefully...";
-            print_newline ())
+            print_newline ()
+          | Failure _ -> print_string "File not found";
+            print_newline ()
+          | Sys_error _ -> print_string "File not found";
+            print_newline ()
+         )
        | Save filename -> (match state with
            | None -> ANSITerminal.(print_string [red]
                                      "\n\nNothing has been loaded yet!\n");
@@ -209,35 +238,36 @@ let rec file_loop (state: 'a option) str =
          try
            (init ();
             let rec loop state () =
+              update_display state 156 170;
               let s = Graphics.wait_next_event [Button_down; Key_pressed] in
               if s.button then loop state ()
               else if s.keypressed then
                 (match s.key with
-                 | 'w' -> let new_st = input_process UpArrow state in update_display new_st;
+                 | 'w' -> let new_st = input_process UpArrow state in
                    loop new_st ()
-                 | 'a' -> let new_st = input_process LeftArrow state in update_display new_st;
+                 | 'a' -> let new_st = input_process LeftArrow state in
                    loop new_st ()
-                 | 's' -> let new_st = input_process DownArrow state in update_display new_st;
+                 | 's' -> let new_st = input_process DownArrow state in
                    loop new_st ()
-                 | 'd' -> let new_st = input_process RightArrow state in update_display new_st;
+                 | 'd' -> let new_st = input_process RightArrow state in
                    loop new_st ()
-                 | '=' -> let new_st = input_process IncWidth state in update_display new_st;
+                 | '=' -> let new_st = input_process IncWidth state in
                    loop new_st ()
-                 | '-' -> let new_st = input_process DecWidth state in update_display new_st;
+                 | '-' -> let new_st = input_process DecWidth state in
                    loop new_st ()
-                 | '1' -> let new_st = input_process Color1 state in update_display new_st;
+                 | '1' -> let new_st = input_process Color1 state in
                    loop new_st ()
-                 | '2' -> let new_st = input_process Color2 state in update_display new_st;
+                 | '2' -> let new_st = input_process Color2 state in
                    loop new_st ()
-                 | '3' -> let new_st = input_process Color3 state in update_display new_st;
+                 | '3' -> let new_st = input_process Color3 state in
                    loop new_st ()
-                 | '4' -> let new_st = input_process Color4 state in update_display new_st;
+                 | '4' -> let new_st = input_process Color4 state in
                    loop new_st ()
-                 | '5' -> let new_st = input_process Color5 state in update_display new_st;
+                 | '5' -> let new_st = input_process Color5 state in
                    loop new_st ()
-                 | '.' -> let new_st = input_process Faster state in update_display new_st;
+                 | '.' -> let new_st = input_process Faster state in
                    loop new_st ()
-                 | ',' -> let new_st = input_process Slower state in update_display new_st;
+                 | ',' -> let new_st = input_process Slower state in
                    loop new_st ()
                  | 'p' ->
                    print_string "Type a command in format \"Save <filename>\"";
@@ -253,8 +283,15 @@ let rec file_loop (state: 'a option) str =
          | Graphics.Graphic_failure("fatal I/O error") ->
            print_string "Force quit detected. Exiting gracefully...";
            print_newline ()
+         | Failure _ -> print_string "";
+           print_newline ()
+         | Sys_error _ -> print_string "File not found";
+           print_newline ()
       )
     with
+    |Graphics.Graphic_failure("fatal I/O error") ->
+      print_string "Force quit detected. Exiting gracefully...";
+      print_newline ()
     | Failure _ ->
       print_string "Command not recognized. Try again.";
       print_newline (); print_string "> ";

@@ -65,7 +65,13 @@ let rec draw_segs segs =
   | [] -> ()
   | h::t -> draw_segment h; Unix.sleepf 0.005; draw_segs t
 
-let update_display st = moveto canvas.x canvas.y; draw_segs st.segments
+let rec slow_draw_segs segs rt=
+  moveto (canvas.x+snd rt) (canvas.y+canvas.height-fst rt);
+    match segs with
+    | [] -> ()
+    | h::t -> draw_segment h; Unix.sleepf 0.1; draw_segs t
+
+let update_display st x y = moveto x y; draw_segs st.segments
 
 (*TODO: resize image and canvas to specific canvas size*)
 (* let resize img w h =
