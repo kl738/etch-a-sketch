@@ -1,31 +1,39 @@
-(* open State *)
+open State
+open View
 (* can't test in utop without doing #use "state.ml" etc. *)
 type pt = int * int
 
-(*TODO: resize stuff, Jack will finish this, just ignore for now*)
-(* we want to resize so that the smaller dimension fits   *)
-let sf src canvas : float = if Array.length src < canvas.height &&
-    Array.length src.(0) < canvas.width then 1.0 (*image smaller than canvas, no need to resize to fit *)
-  else if (Array.length src) > (Array.length src.(0)) then (*portrait image*)
-      float_of_int(canvas.height) /. float_of_int(Array.length src)
-  else float_of_int(canvas.width) /. float_of_int(Array.length src.(0)) (*landscape image*)
-
-let fit_canvas (src : int array array) = let sf = sf src in sf
+(** [crop src canvas] crops the color array array [src] to fit the bounds of [canvas]  *)
+let crop src canvas = if (Array.length src) <= canvas.height &&
+    (Array.length src.(0)) <= canvas.width then a
+    else if (Array.length src) > canvas.height && (Array.length src.(0)) > canvas.width then
+      let a = Array.make_matrix canvas.height (canvas.width) 0 in
+        for i = canvas.height - 1 downto 0 do
+          Array.blit src.(i) 0 a.(i) 0 (canvas.width - 1)
+        done; a
+    else if (Array.length src) > canvas.height then (*portrait image*)
+      let a = Array.make_matrix canvas.height (Array.length src.(0)) 0 in
+        for i = canvas.height - 1 downto 0 do
+          Array.blit src.(i) 0 a.(i) 0 ((Array.length src.(0)) - 1)
+        done; a
+    else (*landscape image*)
+      let a = Array.make_matrix (Array.length src) canvas.width  0 in
+        for i = canvas.width - 1 downto 0 do
+          Array.blit src.(i) i a.(i) i (canvas.width - 1)
+        done; a
 
 (* type of a pixel, [use] is if the pixel has been "seen" already, [c] is the color of the pixel *)
 type pix = {use : bool; c : int}
 
 (** [find_root a x y] traverses [a] starting at position ([x], [y])
   *    to find the first black pixel and return its position.   *)
-  (* TODO: change this to use a pix array array, call after calls group_pixels
-          to find other groups of pixels *)
-let rec find_root (a: pix array array) x y =
-    if a.(x).(y).c == 0 && not a.(x).(y).use then Some (x,y)
-    else if (y < (Array.length a.(x)) - 1)
-      then find_root a x (y+1)
-    else if (x == (Array.length a) - 1)
+let rec find_root (a: pix array array) y x =
+    if a.(y).(x).c == 0 && not a.(y).(x).use then Some (y,x)
+    else if (x < (Array.length a.(y)) - 1)
+      then find_root a y (x+1)
+    else if (y == (Array.length a) - 1)
       then None
-    else find_root a (x+1) 0
+    else find_root a (y+1) 0
 
 let mod_16 i =
   match i mod 16 with
