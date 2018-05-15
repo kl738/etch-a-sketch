@@ -1,12 +1,26 @@
 (* open State *)
 (* can't test in utop without doing #use "state.ml" etc. *)
 type pt = int * int
+type color = int
+
+
+(* we want to resize so that the smaller dimension fits   *)
+let sf src canvas : float = if Array.length src < canvas.height &&
+    Array.length src.(0) < canvas.width then 1.0 (*image smaller than canvas, no need to resize to fit *)
+  else if (Array.length src) > (Array.length src.(0)) then (*portrait image*)
+      float_of_int(canvas.height) /. float_of_int(Array.length src)
+  else float_of_int(canvas.width) /. float_of_int(Array.length src.(0)) (*landscape image*)
+
+let fit_canvas (src : color array array) = let sf = sf src in sf
+
+
+
 
 (** [find_root a x y] traverses [a] starting at position ([x], [y])
   *    to find the first black pixel and return its position.   *)
   (* TODO: change this to use a pix array array, call after calls group_pixels
           to find other groups of pixels *)
-let rec find_root (a: int array array) x y =
+let rec find_root (a: color array array) x y =
     if a.(x).(y) == 0 then (x,y)
     else if (y < (Array.length a.(x)) - 1)
       then find_root a x (y+1)
@@ -28,7 +42,7 @@ let map_seen a =
       pixels that arent directly touching?? -- JACK WILL DO THIS *)
 type 'a tree =
   | Leaf
-  | Node of 'a * 'a tree * 'a tree * 'a tree * 'a tree
+  | Node of 'a * 'a tree * 'a tree * 'a tree * 'a tree * 'a tree * 'a tree * 'a tree * 'a tree
 
 (* i dont remember what this function was for but i'm gonna leave it in just in case *)
 (* let check_pix a dir (x,y) = a.(x).(y) <- {a.(x).(y) with use = true};
@@ -58,14 +72,19 @@ let rec group_pixels root a : pt tree =
         (group_pixels (x-1,y) a),
         (group_pixels (x+1,y) a),
         (group_pixels (x,y-1) a),
-        (group_pixels (x,y+1) a))
+        (group_pixels (x,y+1) a),
+        (group_pixels (x+1,y+1) a),
+        (group_pixels (x-1,y+1) a),
+        (group_pixels (x+1,y-1) a),
+        (group_pixels (x-1,y-1) a))
   else Leaf
 
 (** [dfs tree] converts [tree] to a list of points  *)
 let rec dfs tree =
   match tree with
   | Leaf -> []
-  | Node (rt, u, d, l, r) -> [rt]@(dfs l)@[rt]@(dfs d)@[rt]@(dfs r)@[rt]@(dfs u)@[rt]
+  | Node (rt, u, d, l, r, dr, ur, dl, ul) -> [rt]@(dfs l)@[rt]@(dfs d)@[rt]@(dfs r)@[rt]@(dfs u)@[rt]
+      @(dfs dr)@[rt]@(dfs ur)@[rt]@(dfs dl)@[rt]@(dfs ul)@[rt]
 
 (** [pts_to_segs pts segs] converts the list of pts [pts] to a list of traceable line segments  *)
 let rec pts_to_segs pts segs = let def_seg = {
@@ -82,8 +101,15 @@ let rec pts_to_segs pts segs = let def_seg = {
       | (0, 1) -> pts_to_segs (p2::t) ({def_seg with direction = Right} :: segs)
       | (-1, 0) -> pts_to_segs (p2::t) ({def_seg with direction = Up} :: segs)
       | (0, -1) -> pts_to_segs (p2::t) ({def_seg with direction = Left} :: segs)
+      | (-1, -1) -> pts_to_segs (p2::t) ({def_seg with direction = Up} :: {def_seg with direction = Left} :: segs)
+      | (1, -1) -> pts_to_segs (p2::t) ({def_seg with direction = Down} :: {def_seg with direction = Left} :: segs)
+      | (-1, 1) -> pts_to_segs (p2::t) ({def_seg with direction = Up} :: {def_seg with direction = Right} :: segs)
+      | (1, 1) -> pts_to_segs (p2::t) ({def_seg with direction = Down} :: {def_seg with direction = Right} :: segs)
       | _ -> pts_to_segs (p2::t) (segs) end
   | _ -> segs
+
+let cursor_start rt =
+  ((canvas.x + snd rt), (canvas.y + canvas.height - fst rt))
 
 (** [get_segs a] returns the list of segments from the image array [a]  *)
 (* TODO: this will be in interface, the only (?) function called by an external function,
