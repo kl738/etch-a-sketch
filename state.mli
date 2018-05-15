@@ -38,19 +38,24 @@ val init_state : Yojson.Basic.json -> string -> st
 "new_file.json", and a black one pixel cursor at 100% opacity at position (0,0)*)
 val init_blank_state : st
 
+(*[get_settings] returns the settings record of the state st*)
 val get_settings : st -> settings
 
 (*converts direction to its corresponding integer mapping within json*)
 val direction_to_int : direction -> int
 
+(* [set_settings] takes in a setting and state to update a new state*)
 val set_settings : settings -> st -> st
 
+(* [get_segments] returns the segments of the state st *)
 val get_segments : st -> (segment list)
 
+(* [set_segments] sets the segments of the state*)
 val set_segments : (segment list) -> st -> st
 
 (** [get_filename] specifies the current file name for the game, so that
  * the correct game will be loaded and saved.*)
 val get_filename : st -> string
 
+(*[set_filename] sets the filename of the state to the string*)
 val set_filename : string -> st -> unit

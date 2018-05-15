@@ -104,7 +104,8 @@ let input_process input state =
         opacity = state.st_settings.cursor_opacity;
       }]
     })
-    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 | Faster | Slower->
+    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 | Faster
+    | Slower->
       ({
         st_settings = (update_settings state.st_settings input);
         segments = []
@@ -112,7 +113,8 @@ let input_process input state =
     )
   | Some seg ->
     match input with
-    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 | Faster | Slower->
+    | IncWidth | DecWidth | Color1 | Color2 | Color3 | Color4 | Color5 | Faster
+    | Slower->
       ({
         st_settings = (update_settings state.st_settings input);
         segments = state.segments
@@ -199,7 +201,11 @@ let rec file_loop (state: 'a option) str =
              then loop (state_load filename ) 156 170 ()
              else if (Str.string_match (Str.regexp ".*\\(.png\\)$") filename 0)
              then
-            let (rt,segs) = tree_to_segs (load_image filename |> array_of_image |> make_threshhold 0 0 thresh |> get_groups |> merge_all_groups ) [] in
+               let (rt,segs) = tree_to_segs (load_image filename
+                                             |> array_of_image
+                                             |> make_threshhold 0 0 thresh
+                                             |> get_groups
+                                             |> merge_all_groups ) [] in
              let new_state =
                let setting =
                  { cursor_color = "0x000000";
@@ -212,10 +218,7 @@ let rec file_loop (state: 'a option) str =
                  }
                in {st_settings = setting; segments = segs}
              in
-             (* (slow_draw_segs segs (rt)); loop new_state (156+snd rt) (513-fst rt) () *)
              (slow_draw_segs segs (rt)); loop new_state (156+snd rt) (513-fst rt) ()
-
-             (* else failwith "error" *)
             )
             )
           with
@@ -231,7 +234,8 @@ let rec file_loop (state: 'a option) str =
            | None -> ANSITerminal.(print_string [red]
                                      "\n\nNothing has been loaded yet!\n");
            | Some stateVal -> ANSITerminal.(printf [red]
-                                              "\n\nSaving state ... \n"); state_save stateVal filename
+                                              "\n\nSaving state ... \n");
+             state_save stateVal filename
 
          )
        | Quit -> ANSITerminal.(print_string [red]

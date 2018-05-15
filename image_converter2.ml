@@ -1,5 +1,12 @@
 open State
 
+(*Not actually used. This is the greedy implementation that attempts to pick
+  and traverse along the path of greatest color contrast. However, it frequently
+  runs into deadends where all surrounding pixels have already been visited.
+  It is difficult to use the tree structure here because there is only one path
+of max contrast, so there should be only one child. *)
+
+(*[mod_16] converts the mod of i into its hexadecimal character respresentation*)
 let mod_16 i =
   match i mod 16 with
   | 10 -> "a"
