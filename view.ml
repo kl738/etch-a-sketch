@@ -4,7 +4,7 @@
 #use "state.ml";; *)
 
 (* use this to compile, won't work in utop *)
-open State
+(* open State *)
 
 open Graphics
 open Camlimages
@@ -63,7 +63,7 @@ let draw_segment (seg: segment) =
 let rec draw_segs segs =
   match segs with
   | [] -> ()
-  | h::t -> draw_segment h; draw_segs t
+  | h::t -> draw_segment h; Unix.sleepf 0.005; draw_segs t
 
 let rec slow_draw_segs segs rt=
   moveto (canvas.x+snd rt) (canvas.y+canvas.height-fst rt);
@@ -77,7 +77,7 @@ let update_display st x y = moveto x y; draw_segs st.segments
 (* let resize img w h =
   failwith "unimplemented" *)
 
-(** [array_of_image img] converts [img] to a color array
+(** [array_of_image img] converts [img] to a array of array of colors
   * requires: [img] is RGB or Index *)
 let array_of_image img =
   match img with
