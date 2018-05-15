@@ -94,9 +94,43 @@ let get_segs a =
       let pts = dfs (group_pixels r a') in
   pts_to_segs pts [],r
 
+
+let mod_16 i =
+  match i mod 16 with
+  | 10 -> "a"
+  | 11 -> "b"
+  | 12 -> "c"
+  | 13 -> "d"
+  | 14 -> "e"
+  | 15 -> "f"
+  | n -> string_of_int n
+
+(*[int_to_hex] converts [i] to a list of its hexidecimal character representation.*)
+let rec int_to_hex i=
+  if i = 0 then []
+  else
+    int_to_hex (i/16)@[mod_16 i]
+
+(*[pad] takes in [lst] and pads 0s until it's length=6*)
+let rec pad lst =
+  if List.length lst = 6 then lst
+  else pad ("0"::lst)
+
+(*[get_rgb] takes in color [c] and returns the rgb values in a float triple.*)
+let get_rgb c =
+  let lst = pad (int_to_hex c) in
+  let r = int_of_string ("0x"^(List.nth lst 0) ^ (List.nth lst 1)) in
+  let g = int_of_string ("0x"^(List.nth lst 2) ^ (List.nth lst 3)) in
+  let b = int_of_string ("0x"^(List.nth lst 4) ^ (List.nth lst 5)) in
+  (float_of_int r,float_of_int g,float_of_int b)
+
 (*[color_diff] compares two colors a and b and returns a positive number
   representing how different the colors are. The input should be the
   decimal representation of a 6 figure hex color code. The comparison is
   done using a modified weighted version of RGB euclidian distance that
+  takes into account human perception of color.
 *)
-(* let color_diff a b = *)
+let color_diff a b =
+  let (r1,g1,b1) = get_rgb a in
+  let (r2,g2,b2) = get_rgb b in
+  (2.*.(r1-.r2)**2. +. 4.*.(g1-.g2)**2. +. 3.*.(b1-.b2)**2. ) |> sqrt
