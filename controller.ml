@@ -199,7 +199,7 @@ let rec file_loop (state: 'a option) str =
              then loop (state_load filename ) 156 170 ()
              else if (Str.string_match (Str.regexp ".*\\(.png\\)$") filename 0)
              then
-             let rt,segs = tree_to_segs (load_image filename |> array_of_image |> make_threshhold 0 0 thresh |> get_groups |> merge_all_groups ) [] in
+            let (rt,segs) = tree_to_segs (load_image filename |> array_of_image |> make_threshhold 0 0 thresh |> get_groups |> merge_all_groups ) [] in
              let new_state =
                let setting =
                  { cursor_color = "0x000000";

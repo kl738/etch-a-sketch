@@ -134,7 +134,7 @@ let set_use (x,y) a =
   *   pt tree of points that will be drawn *)
 let rec group_pixels root a : pt tree =
   let x = fst root in let y = snd root in
-  if x >= Array.length a  || y >= Array.length a.(x) then Leaf
+  if x < 0 || y < 0 || x >= Array.length a  || y >= Array.length a.(x) then Leaf
   else if a.(x).(y).c == 0 && not a.(x).(y).use then let _ = set_use (x,y) a in
       Node ((fst root, snd root),
         (group_pixels (x-1,y) a),
@@ -175,10 +175,10 @@ let rec group_pixels root a : pt tree =
   (** [groups p segs] is the list of trees representing groups of contiguous pixels
     *  from pix array array [p]
     *  MAY CONTAIN EMPTY TREES *)
-  let rec groups p trees = match find_root p 0 0 with
+  let rec groups p trees = match find_root p 5 5 with
   | None -> failwith "No root found"
   | Some r -> let g = (group_pixels r p) in
-    match find_root p 0 0 with
+    match find_root p 5 5 with
       | None -> g::trees
       | Some r2 -> groups p (g :: trees)
 
