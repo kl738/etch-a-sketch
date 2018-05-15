@@ -13,6 +13,8 @@ If installed OCaml with Homebrew:
 If installed OCaml with opam:
 `opam switch reinstall 4.06.0`
 
+## how to play:
+make play
 
 ## gameplay controls:
 WASD for movement
