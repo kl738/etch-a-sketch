@@ -16,18 +16,27 @@ If installed OCaml with opam:
 
 ## gameplay controls:
 WASD for movement
+
 -/= for changing width
+
 1-5 for changing color
+
 ,/. changes speed
+
 p switches to command line input
+
 q quits game
 
 ## terminal commands:
 Open <filename.png> <threshold amt>
+
 Open <filename.png
+
 Open <filename.json>
+
 New
+
 Save <filename.json>
 
 
-![Alt text](example.gif?raw=true "Example")
+![Alt text](example.gif)
