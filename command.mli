@@ -3,7 +3,7 @@
  * game, loading game, saving game, and quitting from a game.*)
 type command =
 | New
-| Open of string
+| Open of string * int option
 | Save of string
 | Quit
 

@@ -1,6 +1,6 @@
 type command =
   | New
-  | Open of string
+  | Open of string * int option
   | Save of string
   | Quit
 
@@ -19,8 +19,12 @@ let parse str =
     else let file_name = List.nth (String.split_on_char ' ' str) 1 in
     Save(file_name)
   | "open" ->   let str_lst =   String.split_on_char ' ' (String.trim str) in
-    if List.length str_lst > 2 then failwith "Too many arguments"
+    if List.length str_lst > 3 then failwith "Too many arguments"
+    else if List.length str_lst = 3 then
+      let file_name = List.nth (String.split_on_char ' ' str) 1 in
+      let thresh = int_of_string (List.nth (String.split_on_char ' ' str) 2)
+      in Open(file_name, Some thresh)
     else if List.length str_lst = 1 then failwith "Please specify a file name"
     else let file_name = List.nth (String.split_on_char ' ' str) 1 in
-    Open(file_name)
+    Open(file_name, None)
   | _ -> failwith "Unrecognized command"

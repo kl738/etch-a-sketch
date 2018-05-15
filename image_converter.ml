@@ -79,17 +79,21 @@ let color_diff a b =
 
 (*returns 0 if the pixel is darker than the threshold
 and returns 1 if the pixel is lighter than the threshold*)
-let rec threshold_pixel p  = if(color_diff p 0) <= 150.0 then 0
+let rec threshold_pixel p thresh = if(color_diff p 0) <= thresh then 0
 else 1
 
 (*returns the pixel array with threshold applied.
 requires: x and y both start at 0 *)
-let rec make_threshhold x y (a: int array array)  : int array array =
+let rec make_threshhold x y thresh (a: int array array)  : int array array =
+  let threshhold = (match thresh with
+  |None -> 150.0
+  |Some s -> float_of_int s
+  ) in
     if (y < (Array.length a.(x)) - 1)
-      then (a.(x).(y) <- (threshold_pixel a.(x).(y)); make_threshhold  x (y+1) a)
+      then (a.(x).(y) <- (threshold_pixel a.(x).(y) threshhold); make_threshhold  x (y+1) thresh a )
     else if (x == (Array.length a) - 1)
       then a
-    else (a.(x).(y) <- (threshold_pixel a.(x).(y)); make_threshhold (x+1) 0 a)
+    else (a.(x).(y) <- (threshold_pixel a.(x).(y) threshhold); make_threshhold (x+1) 0 thresh a )
 
 
 
