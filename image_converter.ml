@@ -84,6 +84,9 @@ type 'a tree =
   | Leaf
   | Node of 'a * 'a tree * 'a tree * 'a tree * 'a tree
 
+
+
+
 (* i dont remember what this function was for but i'm gonna leave it in just in case *)
 (* let check_pix a dir (x,y) = a.(x).(y) <- {a.(x).(y) with use = true};
   match dir with
@@ -106,7 +109,7 @@ let set_use (x,y) a =
   *   pt tree of points that will be drawn *)
 let rec group_pixels root a : pt tree =
   let x = fst root in let y = snd root in
-  if x >= Array.length a || y >= Array.length a.(x) then Leaf
+  if x >= Array.length a  || y >= Array.length a.(x) then Leaf
   else if a.(x).(y).c == 0 && not a.(x).(y).use then let _ = set_use (x,y) a in
       Node ((fst root, snd root),
         (group_pixels (x-1,y) a),
@@ -114,6 +117,36 @@ let rec group_pixels root a : pt tree =
         (group_pixels (x,y-1) a),
         (group_pixels (x,y+1) a))
   else Leaf
+
+
+
+let rec merge_2_groups group1 group2 =
+  match group1 with
+  | Node ((x,y),_,_,_,_) -> (
+    match group2 with
+    | Node ((x2,y2),_,_,_,_) -> (
+      let xDiff = x - x2 in
+      let yDiff = y - y2 in
+        (*group2 is farther right*)
+        if(xDiff < 0) then
+          (merge_2_groups (Node ((x + 1,y),Leaf,Leaf,group1,Leaf)) group2)
+        (*group2 is farther left*)
+        else if (xDiff > 0) then
+          (merge_2_groups (Node ((x - 1,y),Leaf,Leaf,Leaf,group1)) group2)
+        (*group2 is farther up*)
+        else if (yDiff < 0) then
+        (  merge_2_groups (Node ((x ,y + 1),group1,Leaf,Leaf, Leaf)) group2)
+        else if (yDiff > 0) then
+        (  merge_2_groups (Node ((x ,y + 1),group1,Leaf,Leaf, Leaf)) group2)
+        else Node ((x,y),group1,group2,Leaf,Leaf)
+      )
+    | Leaf -> group1
+    )
+  | Leaf -> group2
+
+  (*take a list of nodes and output a node merging all of them*)
+  let merge_all_groups group_lst =
+    List.fold_left merge_2_groups Leaf group_lst
 
 (** [dfs tree] converts [tree] to a lit of points  *)
 let rec dfs tree =
