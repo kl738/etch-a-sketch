@@ -189,7 +189,7 @@ let rec file_loop (state: 'a option) str =
                     loop new_st x y ()
                   | 'q' -> ()
                   | 'p' ->
-                    print_string "Type a command in format \"Save <filename>\"";
+                    print_string "Type a command in format \"Cmd <filename>\"";
                     print_newline ();
                     print_string "> ";
                     file_loop (Some state) (read_line ());
