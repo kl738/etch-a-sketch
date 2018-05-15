@@ -4,7 +4,7 @@ open View
 type pt = int * int
 
 (** [crop src canvas] crops the color array array [src] to fit the bounds of [canvas]  *)
-let crop src canvas = if (Array.length src) <= canvas.height &&
+let crop canvas src = if (Array.length src) <= canvas.height &&
     (Array.length src.(0)) <= canvas.width then src
     else if (Array.length src) > canvas.height && (Array.length src.(0)) > canvas.width then
       let a = Array.make_matrix canvas.height (canvas.width) 0 in
