@@ -39,4 +39,4 @@ New
 Save <filename.json>
 
 
-![Alt text](example.gif)
+![Alt text](duckdrawing.gif)
