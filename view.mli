@@ -22,6 +22,8 @@ val update_display : st -> int -> int -> unit
     and begins from the initial blank state*)
 val init : unit -> unit
 
+(** [slow_draw_segs] draws the segements on the canvas starting from the
+int pair specified by rt*)
 val slow_draw_segs : segment list -> int*int -> unit
 
 (** [load_image f] loads the image named [f] in the current directory and returns
