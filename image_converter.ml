@@ -4,7 +4,7 @@ type pt = int * int
 
 type color = int
 
-
+(*TODO: resize stuff, Jack will finish this, just ignore for now*)
 (* we want to resize so that the smaller dimension fits   *)
 let sf src canvas : float = if Array.length src < canvas.height &&
     Array.length src.(0) < canvas.width then 1.0 (*image smaller than canvas, no need to resize to fit *)
@@ -158,10 +158,8 @@ let append_not_empty e l =
   | [] -> l
   | _ -> e :: l
 
-(** [get_segs pix segs] returns the list of segments from the pix array array [pix]  *)
-(* TODO: this will be in interface, the only (?) function called by an external function,
- *    [a] is produced from array_of_image in view.ml *)
-let rec get_segs p segs =
+(** [pix_to_segs pix segs] returns the list of lists of segments from the pix array array [pix]  *)
+let rec pix_to_segs p segs =
   match find_root p 0 0 with
   | None -> failwith "No root found"
   | Some r -> let pts = (dfs (group_pixels r p)) in
@@ -169,3 +167,10 @@ let rec get_segs p segs =
     match find_root p 0 0 with
       | None -> append_not_empty s segs
       | Some r2 -> get_segs p (append_not_empty s segs)
+
+(** [get_segs a] is the list of lists of segments from the color array array [a] *)
+(* TODO: this will be in interface, the only (?) function called by an external function,
+ *    [a] is produced from array_of_image in view.ml *)
+let get_segs a =
+  let p = map_seen a in
+    pix_to_segs p []
