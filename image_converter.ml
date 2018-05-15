@@ -1,17 +1,32 @@
-open State
+(* open State *)
 (* can't test in utop without doing #use "state.ml" etc. *)
 type pt = int * int
+
+type color = int
+
+
+(* we want to resize so that the smaller dimension fits   *)
+let sf src canvas : float = if Array.length src < canvas.height &&
+    Array.length src.(0) < canvas.width then 1.0 (*image smaller than canvas, no need to resize to fit *)
+  else if (Array.length src) > (Array.length src.(0)) then (*portrait image*)
+      float_of_int(canvas.height) /. float_of_int(Array.length src)
+  else float_of_int(canvas.width) /. float_of_int(Array.length src.(0)) (*landscape image*)
+
+let fit_canvas (src : color array array) = let sf = sf src in sf
+
+(* type of a pixel, [use] is if the pixel has been "seen" already, [c] is the color of the pixel *)
+type pix = {use : bool; c : int}
 
 (** [find_root a x y] traverses [a] starting at position ([x], [y])
   *    to find the first black pixel and return its position.   *)
   (* TODO: change this to use a pix array array, call after calls group_pixels
           to find other groups of pixels *)
-let rec find_root (a: int array array) x y =
-    if a.(x).(y) == 0 then (x,y)
+let rec find_root (a: pix array array) x y =
+    if a.(x).(y).c == 0 && not a.(x).(y).use then Some (x,y)
     else if (y < (Array.length a.(x)) - 1)
       then find_root a x (y+1)
     else if (x == (Array.length a) - 1)
-      then failwith "No root found"
+      then None
     else find_root a (x+1) 0
 
 let mod_16 i =
@@ -61,15 +76,13 @@ else 1
 
 (*returns the pixel array with threshold applied.
 requires: x and y both start at 0 *)
-let rec make_threshhold x y (a: int array array)  : int array array =
+let rec make_threshhold x y (a: color array array)  : int array array =
     if (y < (Array.length a.(x)) - 1)
       then (a.(x).(y) <- (threshold_pixel a.(x).(y)); make_threshhold  x (y+1) a)
     else if (x == (Array.length a) - 1)
       then a
     else (a.(x).(y) <- (threshold_pixel a.(x).(y)); make_threshhold (x+1) 0 a)
 
-(* type of a pixel, [use] is if the pixel has been "seen" already, [c] is the color of the pixel *)
-type pix = {use : bool; c : int}
 
 
 (* converts color array array [a] to a pix array array with all pixels marked as not seen *)
@@ -139,11 +152,20 @@ let rec pts_to_segs pts segs = let def_seg = {
       | _ -> pts_to_segs (p2::t) (segs) end
   | _ -> segs
 
-(** [get_segs a] returns the list of segments from the image array [a]  *)
+(** [append_not_empty e l] appends list [e] to list of lists [l] if [e] is not empty  *)
+let append_not_empty e l =
+  match e with
+  | [] -> l
+  | _ -> e :: l
+
+(** [get_segs pix segs] returns the list of segments from the pix array array [pix]  *)
 (* TODO: this will be in interface, the only (?) function called by an external function,
  *    [a] is produced from array_of_image in view.ml *)
-let get_segs a =
-  let a' = map_seen a in
-    let r = find_root a 0 0 in
-      let pts = dfs (group_pixels r a') in
-  pts_to_segs pts [],r
+let rec get_segs p segs =
+  match find_root p 0 0 with
+  | None -> failwith "No root found"
+  | Some r -> let pts = (dfs (group_pixels r p)) in
+    let s = pts_to_segs pts [] in
+    match find_root p 0 0 with
+      | None -> append_not_empty s segs
+      | Some r2 -> get_segs p (append_not_empty s segs)
