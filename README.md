@@ -1,17 +1,33 @@
 # etch-a-sketch
 
-# installation:
+## installation:
 
 `brew install Caskroom/cask/xquartz`
-(maybe) `brew reinstall ocaml --with-x11`
 
+If installed OCaml with Homebrew:
+`brew reinstall ocaml --with-x11`
 
 `opam install graphics`
 `opam install camlimages`
 
+If installed OCaml with opam:
 `opam switch reinstall 4.06.0`
 
-# controls:
-wasd for movement
--= for changing width
+
+## gameplay controls:
+WASD for movement
+-/= for changing width
 1-5 for changing color
+,/. changes speed
+p switches to command line input
+q quits game
+
+## terminal commands:
+Open <filename.png> <threshold amt>
+Open <filename.png
+Open <filename.json>
+New
+Save <filename.json>
+
+
+![Alt text](example.gif?raw=true "Example")
