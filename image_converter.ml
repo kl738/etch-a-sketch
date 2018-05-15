@@ -149,15 +149,15 @@ let rec group_pixels root a : pt tree =
         let yDiff = y - y2 in
           (*group2 is farther right*)
           if(xDiff < 0) then
-            (merge_2_groups (Node ((x + 1,y),Leaf,Leaf,group1,Leaf)) group2)
+            (merge_2_groups (Node ((x + 1,y),group1,Leaf,Leaf,Leaf)) group2)
           (*group2 is farther left*)
           else if (xDiff > 0) then
-            (merge_2_groups (Node ((x - 1,y),Leaf,Leaf,Leaf,group1)) group2)
+            (merge_2_groups (Node ((x - 1,y),Leaf,group1,Leaf,Leaf)) group2)
           (*group2 is farther up*)
           else if (yDiff < 0) then
-          (  merge_2_groups (Node ((x ,y + 1),group1,Leaf,Leaf, Leaf)) group2)
+          (  merge_2_groups (Node ((x ,y + 1),Leaf,Leaf,group1, Leaf)) group2)
           else if (yDiff > 0) then
-          (  merge_2_groups (Node ((x ,y + 1),group1,Leaf,Leaf, Leaf)) group2)
+          (  merge_2_groups (Node ((x ,y - 1),Leaf,Leaf,Leaf, group1)) group2)
           else Node ((x,y),group1,group2,Leaf,Leaf)
         )
       | Leaf -> group1
