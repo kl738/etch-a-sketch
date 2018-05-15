@@ -129,8 +129,16 @@ let rec file_loop (state: 'a option) str =
  * still prompt for a game to play rather than hardcode a game file. *)
 let main () =
   (print_string
-    "\n\nWelcome to the etch-a-sketch simulator!\n");
-  print_endline "Please enter the a command for how to start it up.\n";
+    "\n\nWelcome to the etch-a-sketch simulator!\n
+    Here are some commands you can use:\n
+    You can set threshold from 0 to 400\n
+
+    open <filename.png> <threshold amount>\n
+    open <filename.png>\n
+    open <filename.json>\n
+    new\n
+    save <filename.json>\n");
+  print_endline "\nPlease enter the a command for how to start it up.\n";
   print_string  "> ";
   match read_line () with
   | exception End_of_file -> ()

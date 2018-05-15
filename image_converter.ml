@@ -125,6 +125,7 @@ let rec group_pixels root a : pt tree =
   else Leaf
 
 
+<<<<<<< HEAD
 let rec merge_2_groups group1 group2 =
   match group1 with
   | Node ((x,y),_,_,_,_) -> (
@@ -148,11 +149,39 @@ let rec merge_2_groups group1 group2 =
     | Leaf -> group1
     )
   | Leaf -> group2
+=======
+(*[merge_2_groups] merges the trees [group1] and [group2]
+* into one tree*)
+  let rec merge_2_groups group1 group2 =
+    match group1 with
+    | Node ((x,y),_,_,_,_) -> (
+      match group2 with
+      | Node ((x2,y2),_,_,_,_) -> (
+        let xDiff = x - x2 in
+        let yDiff = y - y2 in
+          (*group2 is farther right*)
+          if(xDiff < 0) then
+            (merge_2_groups (Node ((x + 1,y),group1,Leaf,Leaf,Leaf)) group2)
+          (*group2 is farther left*)
+          else if (xDiff > 0) then
+            (merge_2_groups (Node ((x - 1,y),Leaf,group1,Leaf,Leaf)) group2)
+          (*group2 is farther up*)
+          else if (yDiff < 0) then
+          (  merge_2_groups (Node ((x ,y + 1),Leaf,Leaf,group1, Leaf)) group2)
+          else if (yDiff > 0) then
+          (  merge_2_groups (Node ((x ,y - 1),Leaf,Leaf,Leaf, group1)) group2)
+          else Node ((x,y),group1,group2,Leaf,Leaf)
+        )
+      | Leaf -> group1
+      )
+    | Leaf -> group2
+>>>>>>> f3babfc7e5290636d00f554c3b75fc1c7df97836
 
 (*take a list of nodes and output a node merging all of them*)
 let merge_all_groups group_lst =
     List.fold_left merge_2_groups Leaf group_lst
 
+<<<<<<< HEAD
 (** [groups p segs] is the list of trees representing groups of contiguous pixels
   *  from pix array array [p]
   *  MAY CONTAIN EMPTY TREES *)
@@ -170,6 +199,27 @@ let get_groups a =
       | Leaf -> false
       | Node (_, Leaf, Leaf, Leaf, Leaf) -> false
       | _ -> true) (groups p [])
+=======
+  (** [groups p segs] is the list of trees representing groups of contiguous pixels
+    *  from pix array array [p]
+    *  MAY CONTAIN EMPTY TREES *)
+  let rec groups p trees = match find_root p 5 5 with
+  | None -> failwith "No root found"
+  | Some r -> let g = (group_pixels r p) in
+    match find_root p 5 5 with
+      | None -> g::trees
+      | Some r2 -> groups p (g :: trees)
+
+  (** [get_groups a] is the list of trees for color array array [a] *)
+  let get_groups a =
+    let p = map_seen a in
+      List.filter (fun l -> match l with
+        | Leaf -> false
+        | Node (_, Leaf, Leaf, Leaf, Leaf) -> false
+        | _ -> true) (groups p [])
+
+
+>>>>>>> f3babfc7e5290636d00f554c3b75fc1c7df97836
 
 (** [dfs tree] converts [tree] to a lit of points  *)
 let rec dfs tree =
