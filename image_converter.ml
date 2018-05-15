@@ -183,13 +183,24 @@ let rec pts_to_segs pts segs = let def_seg = {
   width= 1;
   opacity= 1.0;
 } in
+  let prev_dir = match segs with
+  | [] -> None
+  | h::t -> Some (h.direction, h.length) in
   match pts with
   | [] -> segs
   | p1 :: p2 :: t -> begin match (fst p1 - fst p2, snd p1 - snd p2) with
-      | (1, 0) -> pts_to_segs (p2::t) ({def_seg with direction = Down} :: segs)
-      | (0, 1) -> pts_to_segs (p2::t) ({def_seg with direction = Right} :: segs)
-      | (-1, 0) -> pts_to_segs (p2::t) ({def_seg with direction = Up} :: segs)
-      | (0, -1) -> pts_to_segs (p2::t) ({def_seg with direction = Left} :: segs)
+      | (1, 0) -> begin match prev_dir with
+          | Some (Down, l) -> pts_to_segs (p2::t) ({def_seg with direction = Down; length = l+1} :: (List.tl segs))
+          | _ -> pts_to_segs (p2::t) ({def_seg with direction = Down} :: segs) end
+      | (0, 1) -> begin match prev_dir with
+          | Some (Right, l) -> pts_to_segs (p2::t) ({def_seg with direction = Right; length = l+1} :: (List.tl segs))
+          | _ -> pts_to_segs (p2::t) ({def_seg with direction = Right} :: segs) end
+      | (-1, 0) -> begin match prev_dir with
+          | Some (Up, l) -> pts_to_segs (p2::t) ({def_seg with direction = Up; length = l+1} :: (List.tl segs))
+          | _ -> pts_to_segs (p2::t) ({def_seg with direction = Up} :: segs) end
+      | (0, -1) -> begin match prev_dir with
+          |Some (Left, l) -> pts_to_segs (p2::t) ({def_seg with direction = Left; length = l+1} :: (List.tl segs))
+          | _ -> pts_to_segs (p2::t) ({def_seg with direction = Left} :: segs) end
       | _ -> pts_to_segs (p2::t) (segs) end
   | _ -> segs
 
