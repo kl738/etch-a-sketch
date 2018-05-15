@@ -99,8 +99,6 @@ let map_seen a =
 
 (** [pt tree] is a tree that is used to group all pixels together
   *  format of a node is pt, Up, Down, Left, Right *)
-(* TODO: add branches for diagonal pixels, e.g. UpRight, UpLeft to connect those
-      pixels that arent directly touching?? -- JACK WILL DO THIS *)
 type 'a tree =
   | Leaf
   | Node of 'a * 'a tree * 'a tree * 'a tree * 'a tree
