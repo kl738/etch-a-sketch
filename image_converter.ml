@@ -1,7 +1,8 @@
-(* open State *)
+open State
+open View
 (* can't test in utop without doing #use "state.ml" etc. *)
 type pt = int * int
-
+(*)
 (*TODO: resize stuff, Jack will finish this, just ignore for now*)
 (* we want to resize so that the smaller dimension fits   *)
 let sf src canvas : float = if Array.length src < canvas.height &&
@@ -11,7 +12,7 @@ let sf src canvas : float = if Array.length src < canvas.height &&
   else float_of_int(canvas.width) /. float_of_int(Array.length src.(0)) (*landscape image*)
 
 let fit_canvas (src : int array array) = let sf = sf src in sf
-
+*)
 (* type of a pixel, [use] is if the pixel has been "seen" already, [c] is the color of the pixel *)
 type pix = {use : bool; c : int}
 
@@ -154,8 +155,8 @@ let rec group_pixels root a : pt tree =
       )
     | Leaf -> group2
 
-    (*take a list of nodes and output a node merging all of them*)
-    let merge_all_groups group_lst =
+  (*take a list of nodes and output a node merging all of them*)
+  let merge_all_groups group_lst =
       List.fold_left merge_2_groups Leaf group_lst
 
   (** [groups p segs] is the list of trees representing groups of contiguous pixels
