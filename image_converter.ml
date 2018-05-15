@@ -27,8 +27,6 @@ type pix = {use : bool; c : int}
 
 (** [find_root a x y] traverses [a] starting at position ([x], [y])
   *    to find the first black pixel and return its position.   *)
-  (* TODO: change this to use a pix array array, call after calls group_pixels
-          to find other groups of pixels *)
 let rec find_root (a: pix array array) x y =
     if a.(x).(y).c == 0 && not a.(x).(y).use then Some (x,y)
     else if (y < (Array.length a.(x)) - 1)
@@ -37,6 +35,7 @@ let rec find_root (a: pix array array) x y =
       then None
     else find_root a (x+1) 0
 
+(** [mod_16 i] is the string representation of the hex number [i]  *)
 let mod_16 i =
   match i mod 16 with
   | 10 -> "a"
@@ -70,8 +69,7 @@ let get_rgb c =
   representing how different the colors are. The input should be the
   decimal representation of a 6 figure hex color code. The comparison is
   done using a modified weighted version of RGB euclidian distance that
-  takes into account human perception of color.
-*)
+  takes into account human perception of color. *)
 let color_diff a b =
   let (r1,g1,b1) = get_rgb a in
   let (r2,g2,b2) = get_rgb b in
