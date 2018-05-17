@@ -14,31 +14,31 @@ If installed OCaml with opam:
 `opam switch reinstall 4.06.0`
 
 ## how to play:
-make play
+`make play`
 
 ## gameplay controls:
-WASD for movement
+`WASD` for movement
 
--/= for changing width
+`-/=` for changing width
 
-1-5 for changing color
+`1-5` for changing color
 
-,/. changes speed
+`,/.` changes speed
 
-p switches to command line input
+`p` switches to command line input
 
-q quits game
+`q` quits game
 
 ## terminal commands:
-Open <filename.png> <threshold amt>
+`Open <filename.png> <threshold amt>`
 
-Open <filename.png
+`Open <filename.png>`
 
-Open <filename.json>
+`Open <filename.json>`
 
-New
+`New`
 
-Save <filename.json>
+`Save <filename.json>`
 
 
 ![Alt text](duckdrawing.gif)
